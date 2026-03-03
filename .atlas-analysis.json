@@ -1,0 +1,109 @@
+{
+  "projectType": "saas",
+  "projectName": "Raffi",
+  "projectDescription": "A modern, cross-platform streaming application for your personal media library with Stremio addon support",
+  "theme": "palm",
+  "primaryColor": "#FF6B35",
+  "lightColor": "#FFB84D",
+  "darkColor": "#D4380D",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/media-playback",
+              "features/watch-parties",
+              "features/library-management",
+              "features/addons",
+              "features/integrations"
+            ]
+          },
+          {
+            "group": "Platform Guides",
+            "pages": [
+              "platforms/desktop",
+              "platforms/mobile",
+              "platforms/server"
+            ]
+          },
+          {
+            "group": "User Guides",
+            "pages": [
+              "guides/configuration",
+              "guides/troubleshooting",
+              "guides/faq"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "development/overview",
+              "development/setup",
+              "development/project-structure"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/desktop-app",
+              "architecture/mobile-app",
+              "architecture/streaming-server",
+              "architecture/backend"
+            ]
+          },
+          {
+            "group": "Building",
+            "pages": [
+              "building/desktop",
+              "building/mobile",
+              "building/server"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/guidelines",
+              "contributing/code-style"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Cross-platform streaming (Windows, macOS, Linux, iOS, Android)",
+    "Stremio addon ecosystem compatibility",
+    "Watch parties with synchronized playback",
+    "Library management with progress tracking",
+    "Discord Rich Presence integration",
+    "HLS video transcoding",
+    "Multi-quality playback with subtitle support",
+    "Chromecast support"
+  ],
+  "publicApiSurface": [
+    "Desktop App: Electron + Svelte 5 UI",
+    "Mobile App: React Native + Expo",
+    "Streaming Server: Go HLS transcoding service",
+    "Backend: Convex (real-time database)",
+    "Authentication: Supabase",
+    "Watch Party API: Real-time sync via Supabase",
+    "Addon System: Stremio-compatible addon protocol",
+    "Discord RPC: Rich presence integration"
+  ]
+}
