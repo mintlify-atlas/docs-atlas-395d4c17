@@ -1,0 +1,268 @@
+---
+title: Contribution Guidelines
+description: Guidelines for contributing to the Raffi project
+---
+
+## Welcome Contributors
+
+Thank you for your interest in contributing to Raffi! We welcome contributions of all kinds, from bug fixes to new features, documentation improvements, and translations.
+
+## Getting Started
+
+Before you begin contributing, make sure you have:
+
+- **Node.js** 18+ or **Bun** 1.0+ installed
+- **Go** 1.21+ (if working on the streaming server)
+- **Git** for version control
+- Familiarity with TypeScript, Svelte (for desktop/site), or React Native (for mobile)
+
+<Note>
+Raffi is a monorepo containing multiple projects: `raffi-desktop` (Electron + Svelte), `raffi-mobile` (React Native + Expo), `raffi-server` (Go), and `raffi-site` (SvelteKit).
+</Note>
+
+## Development Setup
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/kaleidal/raffi.git
+cd raffi
+```
+
+### Desktop App Development
+
+```bash
+cd raffi-desktop
+
+# Install dependencies
+bun install
+
+# Run in development mode (builds server + starts electron)
+bun run electron:dev
+
+# Run electron only (if server already built)
+bun run electron:dev:only
+
+# Build production release
+bun run dist
+```
+
+### Mobile App Development
+
+```bash
+cd raffi-mobile
+
+# Install dependencies
+npm install
+
+# Start Expo development server
+npm start
+
+# Run on iOS simulator
+npm run ios
+
+# Run on Android emulator
+npm run android
+```
+
+<Tip>
+The mobile app requires the desktop server running for torrent streams. Update `STREAMING_SERVER` in `app/player.tsx` with your local IP address.
+</Tip>
+
+### Server Development
+
+```bash
+cd raffi-server
+
+# Build server binary
+go build -o decoder .
+
+# Run server
+./decoder
+```
+
+### Website Development
+
+```bash
+cd raffi-site
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+## Areas for Contribution
+
+We welcome contributions in the following areas:
+
+### Bug Fixes
+- Report bugs via [GitHub Issues](https://github.com/kaleidal/raffi/issues)
+- Include detailed reproduction steps
+- Specify your platform (Windows, macOS, Linux, iOS, Android)
+- Provide logs and error messages when applicable
+
+### New Features
+- Discuss new features in issues before implementing
+- Ensure features align with Raffi's goals
+- Consider cross-platform compatibility
+- Update documentation for new functionality
+
+### UI/UX Improvements
+- Enhance existing interfaces
+- Improve accessibility
+- Optimize animations and transitions
+- Maintain consistency with Raffi's design language
+
+### Documentation
+- Fix typos and clarify instructions
+- Add examples and use cases
+- Translate documentation to other languages
+- Update outdated information
+
+### Testing
+- Write unit tests for new features
+- Test on multiple platforms
+- Report edge cases and unusual behaviors
+- Verify fixes for reported issues
+
+### Translations
+- Add support for new languages
+- Improve existing translations
+- Ensure cultural appropriateness
+
+## Contribution Workflow
+
+### 1. Fork and Create a Branch
+
+```bash
+# Fork the repository on GitHub, then:
+git clone https://github.com/YOUR_USERNAME/raffi.git
+cd raffi
+
+# Create a feature branch
+git checkout -b feature/your-feature-name
+```
+
+<Note>
+Use descriptive branch names like `feature/discord-integration`, `fix/playback-error`, or `docs/installation-guide`.
+</Note>
+
+### 2. Make Your Changes
+
+- Follow the [code style guidelines](/contributing/code-style)
+- Write clear, descriptive commit messages
+- Test your changes thoroughly
+- Update documentation as needed
+
+### 3. Test on Multiple Platforms
+
+When possible, test your changes on:
+- **Desktop**: Windows, macOS, and Linux
+- **Mobile**: iOS and Android (if applicable)
+
+Ensure your changes don't introduce platform-specific bugs.
+
+### 4. Commit Your Changes
+
+```bash
+# Stage your changes
+git add .
+
+# Commit with a descriptive message
+git commit -m "feat: add Discord Rich Presence integration"
+```
+
+<Tip>
+Write clear, descriptive commit messages that explain the "why" behind your changes, not just the "what".
+</Tip>
+
+### 5. Push and Create a Pull Request
+
+```bash
+# Push to your fork
+git push origin feature/your-feature-name
+```
+
+Then create a Pull Request on GitHub:
+- Provide a clear title and description
+- Reference any related issues
+- Explain what you changed and why
+- Include screenshots for UI changes
+- Mention any breaking changes
+
+### 6. Code Review
+
+- Respond to feedback promptly
+- Make requested changes in new commits
+- Discuss any concerns or disagreements respectfully
+- Be patient - reviews take time
+
+## Development Guidelines
+
+### Code Quality
+
+- **Follow existing patterns**: Review the codebase to understand established conventions
+- **Use TypeScript**: Leverage type safety throughout your code
+- **Keep it simple**: Write clear, maintainable code over clever solutions
+- **Comment complex logic**: Explain non-obvious implementation decisions
+
+### Commits
+
+- **Write clear commit messages**: Use conventional commit format when possible
+  - `feat:` for new features
+  - `fix:` for bug fixes
+  - `docs:` for documentation changes
+  - `refactor:` for code refactoring
+  - `test:` for adding tests
+  - `chore:` for maintenance tasks
+
+- **Keep commits focused**: Each commit should represent a single logical change
+- **Avoid mixing concerns**: Don't combine feature additions with refactoring
+
+### Pull Requests
+
+- **One feature per PR**: Keep pull requests focused on a single feature or fix
+- **Update documentation**: Include doc updates in the same PR as code changes
+- **Add tests when applicable**: Include tests for new functionality
+- **Clean up before submitting**: Remove debug code, console logs, and commented-out code
+
+## Community Guidelines
+
+### Be Respectful
+
+- Treat all contributors with respect and kindness
+- Provide constructive feedback
+- Be open to different perspectives
+- Follow the project's code of conduct
+
+### Communication
+
+- Use GitHub Issues for bug reports and feature requests
+- Discuss significant changes before implementing them
+- Ask questions when you're unsure
+- Share your knowledge and help others
+
+### Attribution
+
+- Give credit where credit is due
+- Reference sources and inspirations
+- Acknowledge contributors in release notes
+
+## Getting Help
+
+- **Issues**: Report bugs and request features at [github.com/kaleidal/raffi/issues](https://github.com/kaleidal/raffi/issues)
+- **Discussions**: Ask questions and discuss ideas in GitHub Discussions
+- **Documentation**: Check the [README](https://github.com/kaleidal/raffi#readme) and project documentation
+
+<Note>
+If you're new to open source, don't be intimidated! Everyone starts somewhere, and we're happy to help you get started.
+</Note>
+
+## License
+
+By contributing to Raffi, you agree that your contributions will be licensed under the MIT License. See the [LICENSE](https://github.com/kaleidal/raffi/blob/main/raffi-desktop/LICENSE) file for details.

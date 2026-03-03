@@ -1,0 +1,621 @@
+---
+title: Mobile App
+description: Raffi mobile companion app built with React Native and Expo for iOS and Android
+---
+
+The Raffi mobile app is a companion application for iOS and Android that syncs your watch progress, library, and authentication with the desktop app. Built with React Native and Expo SDK 54.
+
+## Overview
+
+Raffi Mobile provides a Netflix-style mobile experience with browse, search, continue watching, and native video playback. It connects to the desktop server for torrent transcoding and syncs all data via Supabase.
+
+### Tech Stack
+
+- **Framework**: React Native 0.81.5 with React 19.1.0
+- **Expo SDK**: 54.0.29 with new architecture enabled
+- **Router**: Expo Router 6.0.19 (file-based routing)
+- **Video Player**: Expo Video 3.0.15 (native playback)
+- **State Management**: Zustand 5.0.9
+- **Database**: Supabase (shared with desktop) + Convex
+- **Navigation**: React Navigation 7.1.8 with bottom tabs
+- **UI**: React Native Reanimated 4.1.1 for animations
+
+### Key Dependencies
+
+```json
+{
+  "expo": "~54.0.29",
+  "expo-video": "^3.0.15",
+  "expo-router": "~6.0.19",
+  "react": "19.1.0",
+  "react-native": "0.81.5",
+  "react-native-reanimated": "~4.1.1",
+  "zustand": "^5.0.9",
+  "convex": "^1.31.7",
+  "@ave-id/sdk": "^0.2.2"
+}
+```
+
+## Supported Platforms
+
+<Tabs>
+  <Tab title="iOS">
+    ### iOS
+    
+    **Supported Versions**: iOS 13.0 and later
+    
+    #### System Requirements
+    - **OS**: iOS 13.0+ or iPadOS 13.0+
+    - **Devices**: iPhone 6S and later, iPad Air 2 and later
+    - **Storage**: 100 MB for app + space for cache
+    - **Network**: Wi-Fi or cellular data for streaming
+    
+    #### App Configuration
+    - **Bundle ID**: `al.kaleid.mobile`
+    - **Tablet Support**: Yes (iPadOS optimized)
+    - **Orientation**: All orientations supported
+    - **Full Screen**: Not required (allows PiP and multitasking)
+    - **Dark Mode**: Dark theme enforced
+    
+    #### iOS-Specific Features
+    - **Native Video Player**: Expo Video with native controls
+    - **Picture-in-Picture**: Native PiP support (expo-pip)
+    - **Face ID/Touch ID**: Biometric authentication (planned)
+    - **Background Audio**: Continue playback when app is backgrounded
+    - **Network Security**: `NSAllowsArbitraryLoads` enabled for local server connections
+    
+    #### Limitations
+    
+    **Torrent Streaming**
+    - ❌ **Direct torrenting NOT supported** on iOS
+    - iOS restricts background networking and P2P connections
+    - Native torrent module requires compiling libtorrent for iOS (not yet implemented)
+    
+    **Workarounds**:
+    1. **Debrid Services** (Recommended):
+       - Real-Debrid
+       - AllDebrid
+       - Premiumize
+       
+       Configure a debrid service in Settings to convert torrent links to direct HTTP streams.
+    
+    2. **Desktop Server**: Connect to Raffi desktop server for transcoding (requires desktop app running on same network)
+    
+    #### Building for iOS
+    
+    **Development Build**
+    ```bash
+    # Requires macOS with Xcode
+    npx expo run:ios
+    ```
+    
+    **Production Build**
+    ```bash
+    # Requires Expo Application Services (EAS) account
+    eas build --platform ios
+    
+    # Submit to App Store
+    eas submit --platform ios
+    ```
+    
+    **TestFlight Distribution**
+    ```bash
+    eas build --platform ios --profile preview
+    ```
+  </Tab>
+  
+  <Tab title="Android">
+    ### Android
+    
+    **Supported Versions**: Android 6.0 (API 23) and later
+    
+    #### System Requirements
+    - **OS**: Android 6.0+ (Marshmallow and later)
+    - **Architecture**: ARM64 (most devices), ARMv7 (older devices)
+    - **Memory**: 2 GB RAM minimum, 4 GB recommended
+    - **Storage**: 100 MB for app + space for cache and torrents
+    - **Network**: Wi-Fi or mobile data for streaming
+    
+    #### App Configuration
+    - **Package Name**: `al.kaleid.raffimobile`
+    - **Theme**: Dark mode with edge-to-edge display
+    - **Adaptive Icon**: Custom foreground, background, and monochrome icons
+    - **Background Color**: `#090909` (Netflix-style dark)
+    - **Gesture Navigation**: Edge-to-edge enabled
+    - **Predictive Back**: Disabled for custom navigation handling
+    
+    #### Android-Specific Features
+    - **Native Video Player**: Expo Video with ExoPlayer
+    - **Picture-in-Picture**: Android PiP mode for multitasking
+    - **On-Device Torrent Streaming**: TorrentStream-Android module
+    - **Background Downloads**: Continue downloading when app is backgrounded
+    - **Adaptive Icons**: Material Design 3 theming support
+    - **Edge-to-Edge**: Immersive fullscreen experience
+    
+    #### Torrent Streaming (Android Only)
+    
+    Android supports **native on-device torrent streaming** using a custom native module:
+    
+    **Architecture**:
+    ```
+    React Native → TorrentStreamer.ts → Native Module (Java)
+                                              ↓
+                                    TorrentStream-Android (libtorrent4j)
+                                              ↓
+                                    Local HTTP Server (NanoHTTPD)
+                                              ↓
+                                    http://127.0.0.1:8765/stream/{id}
+    ```
+    
+    **Features**:
+    - Piece prioritization for streaming optimization
+    - DHT and tracker support for peer discovery
+    - Range request support for seeking
+    - Automatic cleanup after playback
+    - Cache directory management
+    
+    **How it works**:
+    1. User selects torrent stream on meta page
+    2. App downloads torrent metadata via DHT
+    3. Identifies largest video file in torrent
+    4. Starts downloading with streaming priority (first pieces + lookahead buffer)
+    5. Spins up local HTTP server on port 8765
+    6. expo-video plays from `http://127.0.0.1:8765/stream/{sessionId}`
+    
+    **Limitations**:
+    - Single active torrent at a time
+    - DHT-only torrents may take longer to connect
+    - Private trackers may not work
+    - Battery usage during downloads
+    
+    #### Building for Android
+    
+    **Development Build**
+    ```bash
+    # Requires Android Studio and Android SDK
+    npx expo run:android
+    ```
+    
+    **Production Build**
+    ```bash
+    # Using Expo Application Services (EAS)
+    eas build --platform android
+    
+    # Submit to Google Play
+    eas submit --platform android
+    ```
+    
+    **APK Build** (for testing)
+    ```bash
+    eas build --platform android --profile preview
+    ```
+    
+    #### Audio Codec Support
+    - **EAC3/Dolby Audio**: Supported natively on most modern devices (Android 5.0+)
+    - **AAC, MP3, Vorbis**: Universal support
+    - **DTS, TrueHD**: Limited support (requires transcoding via desktop server)
+  </Tab>
+</Tabs>
+
+## Features
+
+### Browse Content
+- **Cinemeta Integration**: Popular movies and TV shows from Stremio's Cinemeta catalog
+- **Hero Banner**: Auto-rotating featured content
+- **Content Rows**: Organized by Popular, Trending, Genres
+- **Poster Cards**: Netflix-style grid with smooth loading
+
+### Continue Watching
+- **Cross-Device Sync**: Start on desktop, continue on mobile (via Supabase)
+- **Episode Progress**: Per-episode tracking with resume position
+- **Watched/Unwatched**: Automatic state management
+- **Resume Prompts**: "Continue from XX:XX" on playback start
+
+### Search
+- **Instant Search**: Real-time results as you type
+- **Multi-source**: Search across all configured Stremio addons
+- **Filters**: Movies, TV Shows, by genre, year
+- **Search History**: Recent searches saved locally
+
+### Video Playback
+- **Native Player**: Expo Video with hardware acceleration
+- **Seek Controls**: Gesture-based seeking with thumbnail preview
+- **Quality Selection**: Automatic or manual quality picker
+- **Subtitle Support**: SRT/VTT with configurable size and position
+- **Audio Tracks**: Switch between multiple audio streams
+- **Screen Orientation**: Auto-rotate to landscape for fullscreen
+- **Brightness Control**: Vertical swipe gesture (expo-brightness)
+- **Volume Control**: System volume integration
+- **Keep Awake**: Screen stays on during playback (expo-keep-awake)
+
+### Stremio Addon Support
+- **Shared Addons**: Same addons as desktop app
+- **Addon Management**: Install/remove from mobile
+- **Multi-source Streams**: Aggregate from multiple addons
+- **Cinemeta**: Default catalog for metadata
+
+### Authentication
+- **Supabase Auth**: Shared with desktop app
+- **Email/Password**: Standard authentication
+- **Session Sync**: Automatic token refresh
+- **Secure Storage**: AsyncStorage for credentials
+
+### UI/UX
+- **Dark Theme**: Netflix-style dark interface
+- **Tab Navigation**: Home, Search, Downloads, Profile
+- **Smooth Animations**: React Native Reanimated for 60fps
+- **Blur Effects**: expo-blur for overlays
+- **Haptic Feedback**: expo-haptics for button presses
+- **Linear Gradients**: expo-linear-gradient for visual polish
+
+## Project Structure
+
+```
+raffi-mobile/
+├── app/                      # Expo Router file-based routing
+│   ├── (tabs)/              # Tab navigator screens
+│   │   ├── index.tsx        # Home screen (browse)
+│   │   ├── search.tsx       # Search screen
+│   │   ├── downloads.tsx    # Downloads screen
+│   │   └── profile.tsx      # Profile/settings screen
+│   ├── meta/[id].tsx        # Movie/series detail page
+│   ├── player.tsx           # Video player screen
+│   ├── login.tsx            # Authentication screen
+│   └── _layout.tsx          # Root layout
+├── components/
+│   ├── home/                # Home screen components
+│   │   ├── Hero.tsx         # Hero banner carousel
+│   │   ├── ContentRow.tsx   # Horizontal scrolling row
+│   │   └── ContinueWatching.tsx  # Progress tracking row
+│   └── common/              # Shared components
+│       ├── LoadingSpinner.tsx
+│       ├── PosterCard.tsx
+│       └── SearchBar.tsx
+├── lib/
+│   ├── api.ts               # Cinemeta API client
+│   ├── db.ts                # Supabase operations
+│   ├── supabase.ts          # Supabase client config
+│   ├── types.ts             # TypeScript type definitions
+│   ├── torrent/             # Torrent streaming module
+│   │   └── TorrentStreamer.ts  # Native module interface
+│   └── stores/              # Zustand state management
+│       ├── authStore.ts     # Authentication state
+│       ├── libraryStore.ts  # Library and progress
+│       └── addonsStore.ts   # Addon configuration
+├── constants/
+│   └── theme.ts             # Design system (colors, spacing, typography)
+├── modules/
+│   └── torrent-streamer/    # Native module (Android only)
+│       ├── android/         # Java implementation
+│       └── ios/             # Stub implementation
+├── plugins/
+│   └── withTorrentStreamer.js  # Expo config plugin
+├── assets/
+│   └── images/              # Icons and splash screens
+├── app.json                 # Expo configuration
+└── package.json             # Dependencies
+```
+
+## Development
+
+### Prerequisites
+
+- **Node.js** 18+ and npm
+- **Expo CLI**: `npm install -g expo-cli`
+- **iOS Development** (macOS only):
+  - Xcode 14+
+  - iOS Simulator
+- **Android Development**:
+  - Android Studio
+  - Android SDK (API 23+)
+  - Android Emulator or physical device
+
+### Setup
+
+```bash
+cd raffi-mobile
+
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+```
+
+### Running on Device/Emulator
+
+**iOS Simulator** (macOS only)
+```bash
+npm run ios
+# Or press 'i' in Expo CLI
+```
+
+**Android Emulator**
+```bash
+npm run android
+# Or press 'a' in Expo CLI
+```
+
+**Physical Device**
+1. Install Expo Go app from App Store/Play Store
+2. Scan QR code from `npm start`
+3. App loads in Expo Go
+
+**Note**: Torrent streaming requires a development build (not Expo Go):
+```bash
+# Generate native projects
+npx expo prebuild
+
+# Build and run
+npx expo run:android  # Android
+npx expo run:ios      # iOS
+```
+
+### Connecting to Desktop Server
+
+For torrent streams, update `STREAMING_SERVER` in `app/player.tsx`:
+
+```typescript
+const STREAMING_SERVER = 'http://YOUR_LOCAL_IP:6969';
+```
+
+**Find your local IP**:
+- Windows: `ipconfig`
+- macOS/Linux: `ifconfig` or `ip addr`
+- Should be something like `192.168.1.100`
+
+Ensure:
+1. Desktop app is running
+2. Mobile device on same Wi-Fi network
+3. Firewall allows port 6969
+
+### Development Scripts
+
+```json
+{
+  "start": "expo start",
+  "android": "expo run:android",
+  "ios": "expo run:ios",
+  "web": "expo start --web",
+  "lint": "expo lint"
+}
+```
+
+## Building for Production
+
+### Expo Application Services (EAS)
+
+**Prerequisites**:
+1. Create EAS account: https://expo.dev/
+2. Install EAS CLI: `npm install -g eas-cli`
+3. Login: `eas login`
+
+**Configure Build**:
+```bash
+# Generate eas.json
+eas build:configure
+```
+
+**Build for iOS**:
+```bash
+# Production build
+eas build --platform ios
+
+# Preview build (TestFlight)
+eas build --platform ios --profile preview
+
+# Submit to App Store
+eas submit --platform ios
+```
+
+**Build for Android**:
+```bash
+# Production build (AAB for Google Play)
+eas build --platform android
+
+# APK for testing
+eas build --platform android --profile preview
+
+# Submit to Google Play
+eas submit --platform android
+```
+
+**Build Both Platforms**:
+```bash
+eas build --platform all
+```
+
+### Local Builds (Advanced)
+
+**Android APK**:
+```bash
+# Generate native Android project
+npx expo prebuild --platform android
+
+# Build with Gradle
+cd android
+./gradlew assembleRelease
+
+# APK output: android/app/build/outputs/apk/release/
+```
+
+**iOS IPA** (macOS only):
+```bash
+# Generate native iOS project
+npx expo prebuild --platform ios
+
+# Open in Xcode
+xed ios
+
+# Archive and export via Xcode
+```
+
+## Configuration
+
+### App Metadata (app.json)
+
+```json
+{
+  "expo": {
+    "name": "Raffi",
+    "slug": "raffi-mobile",
+    "version": "1.0.0",
+    "orientation": "default",
+    "scheme": "raffi",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true
+  }
+}
+```
+
+### Expo Plugins
+
+- **expo-router**: File-based routing
+- **expo-screen-orientation**: Landscape for video playback
+- **expo-splash-screen**: Custom splash with dark theme
+- **withTorrentStreamer**: Native torrent module integration
+- **expo-pip**: Picture-in-picture support
+
+### Expo Experiments
+
+```json
+{
+  "experiments": {
+    "typedRoutes": true,      // Type-safe navigation
+    "reactCompiler": true     // React Compiler for performance
+  }
+}
+```
+
+## Cross-Device Sync
+
+Raffi Mobile shares data with desktop via Supabase:
+
+### Synced Data
+- **Authentication**: Shared user accounts and sessions
+- **Watch Progress**: Resume position synced in real-time
+- **Library**: Custom lists, favorites, collections
+- **Addon Settings**: Configured addons available on all devices
+- **Watched States**: Marked as watched/unwatched across platforms
+
+### Sync Stores (Zustand)
+
+**authStore.ts**:
+```typescript
+interface AuthStore {
+  user: User | null;
+  session: Session | null;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
+```
+
+**libraryStore.ts**:
+```typescript
+interface LibraryStore {
+  continueWatching: MediaItem[];
+  favorites: MediaItem[];
+  customLists: List[];
+  updateProgress: (itemId: string, position: number) => void;
+}
+```
+
+**addonsStore.ts**:
+```typescript
+interface AddonsStore {
+  installedAddons: Addon[];
+  installAddon: (url: string) => Promise<void>;
+  removeAddon: (id: string) => void;
+}
+```
+
+## Limitations
+
+### iOS
+- **No Direct Torrenting**: Requires debrid service or desktop server
+- **Background Limits**: iOS suspends background tasks after 3 minutes
+- **File System**: Limited access to local file system
+- **Unsigned App**: Requires Apple Developer account for TestFlight/App Store
+
+### Android
+- **Battery Optimization**: Aggressive battery savers may kill background downloads
+- **Storage Permissions**: Required for torrent cache (auto-requested)
+- **Play Protect**: May flag torrent module as risky (false positive)
+
+### General
+- **Expo Go**: Torrent streaming NOT available in Expo Go (requires development build)
+- **Offline Mode**: Limited functionality without network (downloads coming soon)
+- **Transcoding**: Some codecs require desktop server for transcoding
+- **Network**: Torrent streaming requires Wi-Fi or unlimited data plan
+
+## Troubleshooting
+
+### App won't connect to desktop server
+
+1. **Check same network**: Desktop and mobile must be on same Wi-Fi
+2. **Firewall**: Desktop firewall must allow port 6969
+3. **Correct IP**: Update `STREAMING_SERVER` with desktop's local IP (not 127.0.0.1)
+4. **Server running**: Desktop app must be open and server started
+
+Test connection:
+```bash
+# From desktop, find IP
+ipconfig  # Windows
+ifconfig  # macOS/Linux
+
+# From mobile browser, visit:
+http://<DESKTOP_IP>:6969
+# Should see "Raffi Server" or similar
+```
+
+### Torrent streaming not working (Android)
+
+1. **Development build required**: Doesn't work in Expo Go
+   ```bash
+   npx expo prebuild
+   npx expo run:android
+   ```
+
+2. **Storage permission**: Grant storage access when prompted
+
+3. **Check module loaded**:
+   ```javascript
+   import TorrentStreamer from './lib/torrent/TorrentStreamer';
+   console.log(TorrentStreamer); // Should not be null
+   ```
+
+### Build errors
+
+**EAS build fails**:
+- Check `eas.json` configuration
+- Verify credentials: `eas credentials`
+- Check build logs in Expo dashboard
+
+**Prebuild fails**:
+```bash
+# Clean and retry
+rm -rf android ios node_modules
+npm install
+npx expo prebuild --clean
+```
+
+**Native module errors**:
+```bash
+# Android: Clear Gradle cache
+cd android
+./gradlew clean
+cd ..
+
+# iOS: Clear pods
+cd ios
+rm -rf Pods Podfile.lock
+pod install
+cd ..
+```
+
+## Next Steps
+
+- [Desktop App](/platforms/desktop) - Full-featured desktop application
+- [Streaming Server](/platforms/server) - HLS transcoding server details
+- Configure [Debrid Services](#) for iOS torrent streaming
+- Learn about [Expo Router](https://docs.expo.dev/router/introduction/) file-based routing

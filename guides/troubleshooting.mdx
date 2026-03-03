@@ -1,0 +1,340 @@
+---
+title: Troubleshooting
+description: Solutions to common issues and problems in Raffi
+---
+
+This guide helps you resolve common issues you might encounter while using Raffi.
+
+## Streaming Issues
+
+### No Streams Available
+
+If you're not seeing any streams for content:
+
+**Check your addons:**
+1. Open Settings > Addons
+2. Verify you have at least one addon installed that provides streams
+3. Check that the addon supports the content type (movies or TV shows)
+
+**Try these solutions:**
+- Install popular stream addons from the Community Addons section
+- Refresh the addon list by reopening the Addons modal
+- Check if the addon requires configuration (look for a configure button)
+
+<Note>
+Some content, especially newer releases or less popular titles, may have limited stream availability depending on your installed addons.
+</Note>
+
+### Streams Fail to Load
+
+When a selected stream fails to play:
+
+**Immediate actions:**
+1. Try a different stream from the list
+2. Prefer debrid streams (Real-Debrid, AllDebrid) for better reliability
+3. Check your internet connection
+
+**If multiple streams fail:**
+- Clear cache in Settings > Storage > Clear Cache
+- Restart the application
+- Check if your firewall or antivirus is blocking connections
+
+<Warning>
+Raffi marks failed streams to prevent repeated attempts. If you want to retry a failed stream, restart the app to clear the failure state.
+</Warning>
+
+### Video Buffering or Poor Quality
+
+**For torrent/P2P streams:**
+- Wait a few seconds for the torrent to gather peers
+- Consider debrid services for instant playback
+- Choose streams with higher seeders (if shown in metadata)
+
+**For direct streams:**
+- Test your internet speed (4K requires 25+ Mbps)
+- Select a lower quality stream
+- Close other applications using bandwidth
+
+**Desktop streaming server (raffi-server):**
+- The HLS transcoding server may need time to process the stream
+- Check system resources (CPU/RAM usage)
+- Restart the application to restart the server
+
+### Audio or Subtitle Issues
+
+**No audio tracks available:**
+- The source stream may only have one audio track
+- Try a different stream with multiple audio options
+
+**Subtitles out of sync:**
+1. Open subtitle settings during playback
+2. Use the delay controls (+0.25s / -0.25s)
+3. Adjust until subtitles match dialogue
+
+**Missing subtitle languages:**
+- Not all streams include embedded subtitles
+- Upload your own SRT file using "Upload .srt" in subtitle settings
+- Install subtitle addons from the Addons section
+
+## Authentication Issues
+
+### Can't Sign In with Ave
+
+**Browser doesn't open:**
+1. Check that your default browser is set correctly
+2. Manually navigate to the authentication URL if provided
+3. Try restarting the app
+
+**Authentication times out:**
+- Complete the authentication within 5 minutes
+- Ensure you're not blocking popups or external links
+- Check your network connection
+
+**"Invalid state" error:**
+- This indicates a security check failure
+- Close and restart the authentication flow
+- Clear browser cookies for aveid.net
+
+### Trakt Connection Fails
+
+**"Sign In Required" message:**
+- You must be signed in with Ave before connecting Trakt
+- Sign out and sign back in with Ave, then try again
+
+**"Trakt is not configured" message:**
+- Your build doesn't have Trakt credentials configured
+- This is normal for some community builds
+
+**Connection succeeds but doesn't sync:**
+- Check that "Save watch history" is enabled in Settings > Privacy
+- Verify your Trakt account is active at trakt.tv
+
+## Local Library Issues
+
+### Files Not Detected
+
+If your local media files aren't appearing:
+
+**Check file naming:**
+- Use standard patterns like `Show.Name.S01E01.mkv`
+- Include season and episode numbers for TV shows
+- Include year for movies: `Movie.Name.2024.mkv`
+
+**Rescan the library:**
+1. Go to Settings > Local Library
+2. Click "Rescan"
+3. Wait for the indexing to complete
+
+**Verify folder permissions:**
+- Ensure Raffi has read access to the folder
+- On Linux, check file permissions with `ls -la`
+- On macOS, grant Full Disk Access in System Preferences > Security
+
+### Local Streams Won't Play
+
+**File format issues:**
+- Raffi supports most common formats (MP4, MKV, AVI, MOV)
+- Some codec combinations may require transcoding
+- Try a different file or re-encode problematic videos
+
+**Path errors:**
+- Don't move or rename files after indexing
+- Rescan if you reorganize your library
+
+## Cast Issues
+
+### Can't Find Cast Devices
+
+**Network requirements:**
+- Ensure your computer and cast device are on the same network
+- Check that your firewall allows local network discovery
+- Disable VPN temporarily (it may block local devices)
+
+**Device compatibility:**
+- Verify your device supports Google Cast protocol
+- Ensure the device is powered on and connected to WiFi
+
+### Cast Playback Fails
+
+**Stream compatibility:**
+- Not all stream types support casting
+- Torrent streams may require the desktop transcoding server
+- Try a different stream (prefer direct HTTP/HTTPS streams)
+
+**Connection drops:**
+- Keep Raffi running while casting (it manages the stream)
+- Check WiFi signal strength
+- Reduce network congestion
+
+## Watch Party Issues
+
+### Can't Create or Join Party
+
+**Authentication required:**
+- Watch parties require Ave sign-in
+- Sign out and back in if you're having issues
+
+**Database connection:**
+- Watch parties use Supabase for real-time sync
+- Check your internet connection
+- Try again in a few moments if service is experiencing issues
+
+### Playback Out of Sync
+
+**Host controls:**
+- Only the host can seek and control playback
+- Participants' playback should sync automatically
+
+**Network latency:**
+- High latency can cause drift
+- Participants can manually sync by seeking to current time
+- Close bandwidth-heavy applications
+
+## Performance Issues
+
+### App Runs Slowly
+
+**Desktop performance:**
+- Close unnecessary browser tabs and applications
+- Reduce UI scale in Settings > Preferences
+- Clear cache in Settings > Storage
+- Check for software updates
+
+**High CPU usage:**
+- Video playback uses hardware acceleration when available
+- Check GPU driver updates
+- Lower video quality
+- Disable Discord Rich Presence if not needed
+
+### App Crashes or Freezes
+
+**Immediate troubleshooting:**
+1. Force quit and restart the application
+2. Clear cache and session storage
+3. Check for app updates
+
+**Persistent crashes:**
+- Check system requirements (Node.js 18+, sufficient RAM)
+- Review error logs (if available in app data directory)
+- Disable hardware acceleration in Electron settings
+- Report the issue with crash details
+
+## Update Issues
+
+### Auto-update Fails
+
+**Manual update:**
+1. Visit [raffi.al](https://raffi.al) or the GitHub releases page
+2. Download the latest installer for your platform
+3. Install over your existing installation
+
+**Update notifications:**
+- Some builds may not have auto-update enabled
+- Check the About section for version information
+
+## Mobile-Specific Issues
+
+### Streams Don't Work on Mobile
+
+**Torrent streams:**
+- Mobile app requires the desktop transcoding server or remote server
+- Configure `STREAMING_SERVER` in the mobile app settings
+- Ensure the server is running and accessible on your network
+
+**Direct streams:**
+- Some direct streams may not be compatible with mobile video players
+- Try a different stream
+- Check your mobile data/WiFi connection
+
+### Sync Issues Between Mobile and Desktop
+
+**Watch progress not syncing:**
+- Ensure you're signed in with the same Ave account on both devices
+- Check that "Save watch history" is enabled on both platforms
+- Force close and reopen the app to trigger sync
+
+**Addons not appearing:**
+- Addon configuration is per-device
+- Re-install addons on each platform
+
+## Addon Issues
+
+### Can't Install Addon
+
+**Invalid manifest:**
+- Verify the addon URL ends with `/manifest.json` or is a valid base URL
+- Check that the addon is compatible with the Stremio protocol
+- Try the addon in Stremio first to verify it works
+
+**Addon requires configuration:**
+- Look for a "Configure" button next to the addon
+- Some addons need API keys or authentication
+- Visit the addon's documentation for setup instructions
+
+### Addon Shows No Content
+
+**Resource verification:**
+- Check which resources the addon provides (Streams, Catalogs, Metadata)
+- Not all addons provide all resource types
+- Ensure the addon supports your content type (movies vs. TV)
+
+**Addon service issues:**
+- The addon's server may be down or slow
+- Try removing and re-adding the addon
+- Check the addon's status page or community
+
+## Discord Rich Presence Issues
+
+### Status Not Showing on Discord
+
+**Discord requirements:**
+- Discord desktop app must be running (not browser version)
+- Ensure Discord is not running in "invisible" mode
+- Rich Presence must be enabled in Settings > Preferences
+
+**Reconnection:**
+1. Toggle Discord Rich Presence off and on in settings
+2. Restart both Raffi and Discord
+3. Check Discord's Activity Privacy settings
+
+## Data and Storage
+
+### App Taking Up Too Much Space
+
+**Storage locations:**
+- Cached metadata (posters, backdrops)
+- Local database (watch history)
+- Session data
+
+**Reduce storage:**
+1. Settings > Storage > Clear Cache
+2. Clear old watch history if needed
+3. Remove unused addons
+
+### Lost Watch History
+
+**Recovery options:**
+- If synced via Ave, watch history is stored in the cloud
+- Sign out and back in to re-sync
+- Check Trakt.tv if you have Trakt integration enabled
+
+<Warning>
+Watch history cleared via Settings > Storage > Clear Watch History cannot be recovered.
+</Warning>
+
+## Still Having Issues?
+
+If you're experiencing problems not covered here:
+
+1. **Check for updates**: Ensure you're running the latest version
+2. **Search existing issues**: Visit the [GitHub Issues](https://github.com/kaleidal/raffi/issues) page
+3. **Report a bug**: Create a new issue with:
+   - Your platform (Windows/Linux/macOS/iOS/Android)
+   - App version
+   - Detailed steps to reproduce
+   - Any error messages
+   - Screenshots if applicable
+
+<Note>
+When reporting issues, avoid including personal information or specific content titles in public bug reports.
+</Note>

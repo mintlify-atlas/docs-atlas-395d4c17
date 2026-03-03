@@ -1,0 +1,462 @@
+---
+title: Desktop App
+description: Raffi desktop application built with Electron and Svelte 5 for Windows, macOS, and Linux
+---
+
+The Raffi desktop application is a modern streaming platform built with Electron 40, Svelte 5, and TypeScript. It provides a beautiful, Netflix-like experience with full access to the Stremio addon ecosystem.
+
+## Overview
+
+Raffi Desktop is the flagship application offering the complete feature set including watch parties, Discord integration, local file playback, and HLS transcoding via the bundled Go server.
+
+### Tech Stack
+
+- **Framework**: Electron 40.2.1
+- **Frontend**: Svelte 5.50.0 with TypeScript 5.9.3
+- **Styling**: Tailwind CSS 4.1.18
+- **Video Player**: HLS.js 1.6.15 for adaptive streaming
+- **Build Tool**: Vite 7.3.1 + electron-builder 26.7.0
+- **Database**: Supabase (PostgreSQL) + Convex
+- **Bundled Server**: Go HLS transcoding server (see [Server documentation](/platforms/server))
+
+### Key Dependencies
+
+```json
+{
+  "@supabase/supabase-js": "^2.95.3",
+  "@ryuziii/discord-rpc": "^1.0.1-rc.1",
+  "chromecast-api": "^0.4.2",
+  "electron-updater": "^6.7.3",
+  "hls.js": "^1.6.15",
+  "lucide-svelte": "^0.563.0",
+  "posthog-js": "^1.342.1"
+}
+```
+
+## Supported Platforms
+
+<Tabs>
+  <Tab title="Windows">
+    ### Windows
+    
+    **Supported Versions**: Windows 10 and later
+    
+    #### System Requirements
+    - **OS**: Windows 10 (64-bit) or Windows 11
+    - **Memory**: 4 GB RAM minimum, 8 GB recommended
+    - **Storage**: 500 MB for application + space for media cache
+    - **Graphics**: Hardware acceleration supported GPU recommended
+    
+    #### Installation Options
+    
+    **NSIS Installer** (Recommended)
+    ```bash
+    Raffi-Setup-0.7.0.exe
+    ```
+    - Standard Windows installer with auto-update support
+    - Installs to `C:\Program Files\Raffi`
+    - Creates Start Menu shortcuts
+    - Registers file associations for video formats
+    
+    **MSI Installer**
+    ```bash
+    Raffi-0.7.0.msi
+    ```
+    - Enterprise deployment option
+    - Supports silent installation: `msiexec /i Raffi-0.7.0.msi /quiet`
+    
+    #### Windows-Specific Features
+    - **File Associations**: MP4, MKV, AVI, WebM, MOV
+    - **App User Model ID**: `al.kaleid.raffi`
+    - **Discord Rich Presence**: Native integration
+    - **Auto-updater**: Automatic background updates
+    
+    #### Bundled Server Binary
+    The Windows build includes `decoder-windows-amd64.exe` compiled with:
+    - CGO enabled with static linking
+    - GCC compiler for Windows
+    - SQLite with `sqlite_omit_load_extension` tag
+  </Tab>
+  
+  <Tab title="macOS">
+    ### macOS
+    
+    **Supported Versions**: macOS 10.15 (Catalina) and later
+    
+    #### System Requirements
+    - **OS**: macOS 10.15+ (Catalina, Big Sur, Monterey, Ventura, Sonoma)
+    - **Architecture**: Intel (x86_64) and Apple Silicon (ARM64) universal build
+    - **Memory**: 4 GB RAM minimum, 8 GB recommended
+    - **Storage**: 500 MB for application + space for media cache
+    
+    #### Installation Options
+    
+    **DMG Package** (Recommended)
+    ```bash
+    Raffi-0.7.0.dmg
+    ```
+    - Mount the DMG and drag Raffi to Applications folder
+    - First launch may require right-click → Open (unsigned app)
+    
+    **ZIP Archive**
+    ```bash
+    Raffi-0.7.0.zip
+    ```
+    - Extract and move to Applications folder
+    - Run `xattr -cr /Applications/Raffi.app` if blocked by Gatekeeper
+    
+    #### macOS-Specific Features
+    - **Universal Binary**: Native support for both Intel and Apple Silicon
+    - **App Category**: Video (`public.app-category.video`)
+    - **File Associations**: MP4, MKV, AVI, WebM, MOV
+    - **Unsigned Build**: Identity set to `null` (requires manual approval)
+    
+    #### Bundled Server Binaries
+    macOS builds include both architecture-specific server binaries:
+    - `decoder-aarch64-apple-darwin` (Apple Silicon)
+    - `decoder-x86_64-apple-darwin` (Intel)
+    
+    The app automatically selects the correct binary for your Mac's architecture.
+  </Tab>
+  
+  <Tab title="Linux">
+    ### Linux
+    
+    **Supported Distributions**: Debian, Ubuntu, Fedora, RHEL, Arch, and others
+    
+    #### System Requirements
+    - **OS**: Modern Linux distribution (2018+)
+    - **Architecture**: x86_64 (64-bit)
+    - **Memory**: 4 GB RAM minimum, 8 GB recommended
+    - **Storage**: 500 MB for application + space for media cache
+    - **Graphics**: Hardware acceleration requires proper GPU drivers
+    
+    #### Installation Options
+    
+    **Debian/Ubuntu (.deb)**
+    ```bash
+    sudo dpkg -i Raffi-0.7.0-amd64.deb
+    
+    # If dependencies are missing
+    sudo apt-get install -f
+    ```
+    
+    **Fedora/RHEL (.rpm)**
+    ```bash
+    sudo rpm -i Raffi-0.7.0-x86_64.rpm
+    
+    # Or with dnf
+    sudo dnf install ./Raffi-0.7.0-x86_64.rpm
+    ```
+    
+    **Universal AppImage**
+    ```bash
+    chmod +x Raffi-0.7.0.AppImage
+    ./Raffi-0.7.0.AppImage
+    
+    # Optional: Integrate with system
+    ./Raffi-0.7.0.AppImage --appimage-extract
+    # Then move to /opt or ~/.local
+    ```
+    
+    #### Linux-Specific Features
+    - **Desktop Integration**: `raffi.desktop` entry
+    - **Window Class**: `Raffi` for window managers
+    - **App Category**: Video
+    - **Icon Location**: `/usr/share/icons` (deb/rpm) or bundled (AppImage)
+    - **Protocol Handler**: Registered for custom URL schemes
+    
+    #### Bundled Server Binary
+    Linux builds include `decoder-x86_64-unknown-linux-gnu` compiled with:
+    - Static linking (`-extldflags "-static"`)
+    - CGO enabled
+    - Portable across most Linux distributions
+    
+    #### Troubleshooting
+    
+    **Sandbox Issues**
+    If you encounter permission errors, the app uses `ELECTRON_DISABLE_SANDBOX=1` in development.
+    
+    **Missing Dependencies**
+    ```bash
+    # Ubuntu/Debian
+    sudo apt-get install libgtk-3-0 libnotify4 libnss3 libxss1 \
+      libxtst6 xdg-utils libatspi2.0-0 libdrm2 libgbm1
+    
+    # Fedora
+    sudo dnf install gtk3 libnotify nss libXScrnSaver libXtst xdg-utils
+    ```
+  </Tab>
+</Tabs>
+
+## Features
+
+### Media Playback
+- **HLS.js Player**: Adaptive bitrate streaming with quality selection
+- **Multiple Audio Tracks**: Switch between audio streams
+- **Subtitle Support**: SRT and VTT formats with delay adjustment
+- **Picture-in-Picture**: Native PiP mode
+- **Fullscreen**: Seamless fullscreen experience
+- **Custom Seek Bar**: Configurable styles and time-remaining display
+
+### Watch Together
+- **Real-time Synchronization**: WebSocket-based state management via Supabase
+- **Host Controls**: Host can control playback for all participants
+- **Presence Indicators**: See who's watching with you
+- **Chat Integration**: Built-in messaging during watch parties
+- **Automatic Reconnection**: Handles network interruptions gracefully
+
+### Discord Integration
+- **Rich Presence**: Show what you're watching on Discord
+- **Custom Status**: Displays movie/show title, episode info, and timestamp
+- **Auto-connect**: Automatically connects when Discord is running
+- **Graceful Fallback**: Silent failure when Discord isn't available
+
+### Stremio Addon Ecosystem
+- **Full Compatibility**: Works with any Stremio addon
+- **Multi-source Aggregation**: Combine streams from multiple addons
+- **Torrent/Magnet Support**: Direct torrent streaming via bundled server
+- **Addon Management**: Easy installation and configuration
+- **Community Addons**: Access to extensive addon library
+
+### Local Media
+- **File Playback**: Open local video files directly
+- **Supported Formats**: MP4, MKV, AVI, WebM, MOV
+- **File Associations**: Double-click video files to open in Raffi
+- **Drag and Drop**: Drop files into the app window
+- **Library Scanning**: Automatic media library organization
+
+### Chromecast Support
+- **Device Discovery**: Automatic Chromecast detection on network
+- **Remote Playback**: Cast to TV or Chromecast devices
+- **Media Router**: Chromium's built-in Cast support
+- **Bootstrap Service**: Custom casting implementation
+
+### Auto-updates
+- **Background Updates**: electron-updater 6.7.3
+- **GitHub Releases**: Updates published via GitHub
+- **Silent Installation**: Automatic restart on update
+- **Update Notifications**: Optional user prompts
+
+## Development
+
+### Prerequisites
+
+- **Node.js** 18+ or **Bun** 1.0+
+- **Go** 1.25+ (for building the server)
+- **Git**
+- **Platform-specific**:
+  - Windows: GCC (via MinGW or MSYS2)
+  - macOS: Xcode Command Line Tools
+  - Linux: build-essential, gcc
+
+### Setup
+
+```bash
+cd raffi-desktop
+
+# Install dependencies (using Bun)
+bun install
+
+# Or with npm
+npm install
+```
+
+### Development Scripts
+
+**Start Development Server**
+```bash
+# Build server + start Electron with hot reload
+bun run electron:dev
+
+# Or just start Electron (if server already built)
+bun run electron:dev:only
+```
+
+This runs:
+1. `npm run server:build` - Compiles the Go server binary
+2. `npm run dev` - Starts Vite dev server on http://localhost:5173
+3. Waits for Vite to be ready
+4. Launches Electron with `ELECTRON_DISABLE_SANDBOX=1`
+
+**Build for Production**
+```bash
+# Build all platforms (current OS)
+bun run dist
+
+# Windows only
+bun run dist -- --win
+
+# macOS only
+bun run dist -- --mac
+
+# Linux only
+bun run dist -- --linux
+```
+
+Output files are placed in `raffi-desktop/release/`
+
+### Project Structure
+
+```
+raffi-desktop/
+├── electron/
+│   ├── main.cjs              # Electron main process
+│   ├── services/
+│   │   ├── decoder.cjs       # Server binary management
+│   │   ├── castBootstrap.cjs # Chromecast setup
+│   │   ├── castSender.cjs    # Cast sender service
+│   │   ├── rpc.cjs           # Discord RPC handlers
+│   │   ├── window.cjs        # Window management
+│   │   ├── protocol.cjs      # Deep link handling
+│   │   ├── mediaScan.cjs     # Library scanning
+│   │   ├── ffmpeg.cjs        # FFmpeg integration
+│   │   ├── logging.cjs       # Logging service
+│   │   └── mainIpc.cjs       # IPC handlers
+│   └── decoder-*             # Compiled server binaries (generated)
+├── src/                      # Svelte frontend
+│   ├── App.svelte
+│   ├── components/
+│   ├── lib/
+│   └── main.ts
+├── build/
+│   └── icons/                # App icons for each platform
+├── package.json              # App config + electron-builder settings
+├── build_binary.cjs          # Server build script
+└── vite.config.ts            # Vite configuration
+```
+
+### Configuration
+
+**Window Settings** (electron/main.cjs:109-114)
+```javascript
+const MIN_ZOOM = 0.65;
+const MAX_ZOOM = 1.0;
+const WIDTH_THRESHOLD = 1600;
+const DEFAULT_WINDOW_WIDTH = 1778;
+const DEFAULT_WINDOW_HEIGHT = 1000;
+```
+
+**electron-builder** (package.json:36-132)
+- **App ID**: `al.kaleid.raffi`
+- **Product Name**: `Raffi`
+- **Output Directory**: `release/`
+- **ASAR**: Enabled (with unpack for native modules)
+- **Auto-updater**: GitHub releases
+
+## Building from Source
+
+### Build Server Binary
+
+```bash
+node build_binary.cjs
+```
+
+This automatically builds the correct binary for your platform:
+- Windows: `decoder-windows-amd64.exe`
+- Linux: `decoder-x86_64-unknown-linux-gnu`
+- macOS: `decoder-aarch64-apple-darwin` or `decoder-x86_64-apple-darwin`
+
+### Build Application
+
+```bash
+# Complete build pipeline
+bun run dist
+```
+
+Builds:
+1. Server binary (via `build_binary.cjs`)
+2. Frontend (via `vite build`)
+3. Electron app (via `electron-builder`)
+
+### Platform-Specific Builds
+
+**Cross-platform builds** require additional setup:
+
+```bash
+# Build for Windows from Linux (requires wine)
+docker run --rm -v $(pwd):/project electronuserland/builder:wine \
+  /bin/bash -c "cd /project/raffi-desktop && npm run dist -- --win"
+
+# Build for macOS (requires macOS or CI)
+bun run dist -- --mac
+```
+
+## Limitations
+
+### Windows
+- Requires Windows 10 or later (Electron 40 limitation)
+- Some antivirus software may flag the bundled server binary
+- Windows Defender may require approval for network access
+
+### macOS
+- App is unsigned (requires manual approval on first launch)
+- Gatekeeper may block execution (use `xattr -cr` workaround)
+- Notarization not configured (prevents automatic installation)
+
+### Linux
+- AppImage may have sandbox issues on some distributions
+- Protocol handlers require manual registration on some DEs
+- Hardware acceleration varies by GPU drivers
+
+### General
+- **Single Instance**: Only one Raffi window can run at a time
+- **Memory Usage**: Large media libraries may consume significant RAM
+- **Server Port**: Requires port 6969 available for local server
+- **Network Access**: Firewall must allow connections for torrents
+
+## Troubleshooting
+
+### App won't start
+
+**Check logs**:
+- Windows: `%APPDATA%\Raffi\logs\`
+- macOS: `~/Library/Logs/Raffi/`
+- Linux: `~/.config/Raffi/logs/`
+
+**Common issues**:
+- Port 6969 already in use (check for existing instances)
+- Missing GPU drivers (disable hardware acceleration)
+- Corrupt cache (delete app data directory)
+
+### Server not starting
+
+```bash
+# Manually test the server binary
+cd raffi-desktop/electron
+./decoder-windows-amd64.exe  # Windows
+./decoder-x86_64-apple-darwin  # macOS Intel
+./decoder-aarch64-apple-darwin  # macOS Apple Silicon
+./decoder-x86_64-unknown-linux-gnu  # Linux
+```
+
+Server runs on `http://127.0.0.1:6969` by default. Check if port is available:
+```bash
+# Check port 6969
+netstat -an | grep 6969
+```
+
+### Discord RPC not working
+
+The app gracefully handles Discord connection failures:
+- Discord must be running before launching Raffi
+- Discord IPC errors are logged but don't crash the app
+- Check logs for "Discord IPC connect failure" messages
+
+### Build errors
+
+**Server build fails**:
+- Ensure Go 1.25+ is installed: `go version`
+- Check GCC is available: `gcc --version` (Windows/Linux)
+- Clean build: `rm electron/decoder-* && node build_binary.cjs`
+
+**Electron build fails**:
+- Clear node_modules: `rm -rf node_modules && bun install`
+- Check electron-builder logs in `release/`
+- Ensure all binaries exist in `electron/` directory
+
+## Next Steps
+
+- [Mobile App](/platforms/mobile) - Companion app for iOS and Android
+- [Streaming Server](/platforms/server) - Details about the Go HLS server
+- Learn about [Stremio Addons](https://github.com/Stremio/stremio-addons) compatibility

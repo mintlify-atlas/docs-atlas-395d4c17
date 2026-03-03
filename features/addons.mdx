@@ -1,0 +1,389 @@
+---
+title: 'Stremio Addon System'
+description: 'Full compatibility with Stremio addons for content discovery, streaming sources, and subtitles'
+---
+
+Raffi is fully compatible with the Stremio addon ecosystem, allowing you to use any Stremio addon for content sources, metadata, subtitles, and catalogs.
+
+## What are Stremio Addons?
+
+Stremio addons are community-developed extensions that provide:
+
+- **Streaming sources** - Links to video content
+- **Subtitles** - Multi-language subtitle files
+- **Catalogs** - Browsable collections of content
+- **Metadata** - Information about movies and TV shows
+
+<Info>
+Raffi uses the proven Stremio addon protocol, giving you access to hundreds of community-maintained addons.
+</Info>
+
+## Addon Resources
+
+Each addon can provide one or more resource types:
+
+### Stream Resources
+
+Provide video streaming sources:
+
+- Torrent/magnet links
+- Direct HTTP/HTTPS video URLs
+- HLS manifests
+- Multiple quality options
+
+### Subtitle Resources
+
+Provide subtitle files:
+
+- Multiple languages
+- SRT and VTT formats
+- Automatic fetching during playback
+- Synced with video content
+
+### Catalog Resources
+
+Provide browsable content collections:
+
+- Movies and TV shows
+- Genre-based catalogs
+- Popular/trending content
+- Search functionality
+
+### Meta Resources
+
+Provide content information:
+
+- Titles, descriptions, and posters
+- Cast and crew information
+- Episode lists for TV series
+- Release dates and ratings
+
+## Installing Addons
+
+Add new addons to expand Raffi's capabilities:
+
+<Steps>
+  <Step title="Open Addon Manager">
+    Click "Addons" in the sidebar or settings.
+  </Step>
+  
+  <Step title="Add Addon URL">
+    Paste the addon's manifest URL (ends with `/manifest.json`).
+  </Step>
+  
+  <Step title="Install">
+    Click "Install" or "Add Addon" to install.
+  </Step>
+  
+  <Step title="Wait for Validation">
+    Raffi validates the addon manifest and checks for supported resources.
+  </Step>
+  
+  <Step title="Addon Ready">
+    The addon appears in your list and is immediately available.
+  </Step>
+</Steps>
+
+<Note>
+Some addons require configuration. If you see a "Configure" button, click it to set up the addon properly.
+</Note>
+
+## Managing Addons
+
+### Viewing Installed Addons
+
+See all your configured addons:
+
+1. Navigate to the Addons page
+2. View addon names, types, and capabilities
+3. See which resources each addon provides
+4. Check addon status and configuration
+
+### Addon Information
+
+Each addon displays:
+
+- **Name** - Addon display name
+- **Version** - Current addon version
+- **Resources** - Available resource types (Streams, Subtitles, Catalogs, Meta)
+- **Description** - What the addon provides
+- **Transport URL** - Base URL for the addon
+
+### Configuring Addons
+
+Some addons require setup:
+
+<Steps>
+  <Step title="Click Configure">
+    Click the "Configure" button next to the addon.
+  </Step>
+  
+  <Step title="Enter Settings">
+    Opens the addon's configuration page (usually in a browser).
+  </Step>
+  
+  <Step title="Save Configuration">
+    Follow the addon's instructions to complete setup.
+  </Step>
+  
+  <Step title="Return to Raffi">
+    Configuration is automatically applied.
+  </Step>
+</Steps>
+
+<Tip>
+Many addons offer advanced options like quality preferences, language settings, and account integration.
+</Tip>
+
+### Removing Addons
+
+<Steps>
+  <Step title="Open Addon Manager">
+    Navigate to your addons list.
+  </Step>
+  
+  <Step title="Select Addon">
+    Find the addon you want to remove.
+  </Step>
+  
+  <Step title="Uninstall">
+    Click the remove or uninstall button.
+  </Step>
+  
+  <Step title="Confirm">
+    Confirm the removal when prompted.
+  </Step>
+</Steps>
+
+## Using Addons
+
+### Finding Streams
+
+When you select content to watch:
+
+1. Raffi queries all installed addons with stream resources
+2. Available streams appear grouped by addon
+3. Each stream shows quality, size, and source information
+4. Select any stream to begin playback
+
+<Info>
+Addons are queried in parallel for fast stream discovery.
+</Info>
+
+### Stream Filtering
+
+Filter and sort available streams:
+
+- **By quality** - 1080p, 720p, 480p, etc.
+- **By source** - Group by addon provider
+- **By size** - Sort by file size
+- **By seeds** - Sort torrents by seeder count
+
+### Automatic Subtitle Fetching
+
+Subtitles are automatically fetched:
+
+1. When you start playing content
+2. Raffi queries all subtitle-enabled addons
+3. Available subtitles appear in the subtitle menu
+4. Each subtitle shows language and source addon
+5. Select any subtitle to load immediately
+
+### Catalog Browsing
+
+Browse content from addon catalogs:
+
+1. Navigate to the catalog section
+2. Select an addon catalog
+3. Browse movies, series, or genres
+4. Click any item to view details and streams
+
+### Addon Search
+
+Search across addon catalogs:
+
+- Searches all catalogs with search support
+- Combines results from multiple addons
+- Deduplicates matching content
+- 1.8-second timeout per addon for responsiveness
+
+## Addon Compatibility
+
+### Supported Addon Types
+
+Raffi supports all standard Stremio addon types:
+
+- **Movie addons** - Content type: `movie`
+- **Series addons** - Content type: `series`
+- **Multi-type addons** - Support both movies and series
+
+### Resource Validation
+
+Raffi validates addon resources:
+
+- Checks for supported resource types
+- Validates manifest structure
+- Tests addon connectivity
+- Displays warnings for unsupported features
+
+<Note>
+Raffi filters out addons with no supported resources during installation.
+</Note>
+
+### ID Prefix Support
+
+Addons can specify ID prefixes they support:
+
+- **IMDb IDs** - `tt` prefix (e.g., `tt1234567`)
+- **TMDB IDs** - Custom prefixes
+- **Other databases** - Addon-specific prefixes
+
+Raffi respects these restrictions when querying addons.
+
+## Advanced Features
+
+### Multiple Addons for Redundancy
+
+Install multiple stream addons:
+
+- Increases likelihood of finding working streams
+- Provides quality options from different sources
+- Automatic fallback if one addon fails
+- Compare sources before selecting
+
+### Addon Priority
+
+While Raffi doesn't have explicit priority settings:
+
+- Results from all addons shown together
+- You choose which stream to use
+- Sort and filter to find preferred sources
+- Recently working streams move to top
+
+### Addon Caching
+
+Raffi caches addon responses:
+
+- **Catalog results** - Cached for faster browsing
+- **Search results** - 60-second cache
+- **Metadata** - Cached until refresh
+- **Stream lists** - Fresh on each request
+
+### Custom Addon Development
+
+You can create your own addons:
+
+1. Follow the Stremio addon SDK documentation
+2. Deploy your addon to any hosting service
+3. Add the manifest URL to Raffi
+4. Your custom addon works like any other
+
+<Tip>
+Check the [Stremio Addon SDK](https://github.com/Stremio/stremio-addon-sdk) for development resources.
+</Tip>
+
+## Addon Manifest Structure
+
+Raffi reads standard Stremio manifests:
+
+```json
+{
+  "id": "addon.identifier",
+  "version": "1.0.0",
+  "name": "My Addon",
+  "description": "Provides streaming sources",
+  "resources": ["stream", "subtitles"],
+  "types": ["movie", "series"],
+  "catalogs": [],
+  "idPrefixes": ["tt"]
+}
+```
+
+### Required Fields
+
+- `id` - Unique addon identifier
+- `version` - Addon version
+- `name` - Display name
+- `resources` - Available resource types
+
+### Optional Fields
+
+- `description` - What the addon provides
+- `types` - Supported content types
+- `catalogs` - Browsable catalogs
+- `idPrefixes` - Supported ID formats
+
+## Finding Addons
+
+Discover new Stremio addons:
+
+- **Community lists** - Search for "Stremio addons" online
+- **Reddit** - r/Stremio has addon recommendations
+- **Official addons** - Check Stremio's addon directory
+- **Forums** - Stremio community forums
+
+<Info>
+Any addon that works with Stremio will work with Raffi.
+</Info>
+
+## Troubleshooting
+
+### Addon Won't Install
+
+If an addon fails to install:
+
+- Verify the manifest URL is correct
+- Check that the URL is accessible
+- Ensure the addon provides supported resources
+- Check Raffi console logs for specific errors
+
+### No Streams Found
+
+If addons return no streams:
+
+- Verify addons are properly configured
+- Check if addons require authentication
+- Try a different content item
+- Install additional stream addons
+
+### Slow Stream Loading
+
+If streams load slowly:
+
+- Some addons query external services
+- Network conditions affect response times
+- Try addons with faster infrastructure
+- Consider local or cached addons
+
+### Addon Configuration Issues
+
+If configuration doesn't work:
+
+- Clear browser cache and try again
+- Follow addon's specific setup instructions
+- Check if addon requires account registration
+- Contact addon developer for support
+
+<Note>
+Raffi displays addon errors in the console. Check console logs for detailed troubleshooting information.
+</Note>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Multiple Sources" icon="layer-group">
+    Install 3-5 reliable stream addons for best availability.
+  </Card>
+  
+  <Card title="Keep Updated" icon="arrows-rotate">
+    Check for addon updates periodically for best performance.
+  </Card>
+  
+  <Card title="Test After Install" icon="vial">
+    Test new addons with known content to verify they work.
+  </Card>
+  
+  <Card title="Remove Unused" icon="trash">
+    Remove non-working or duplicate addons to keep things clean.
+  </Card>
+</CardGroup>

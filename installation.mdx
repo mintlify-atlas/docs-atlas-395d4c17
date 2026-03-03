@@ -1,0 +1,300 @@
+---
+title: Installation
+description: Download and install Raffi on Windows, macOS, Linux, iOS, and Android
+---
+
+# Installing Raffi
+
+Raffi is available on all major platforms. Download the appropriate installer for your operating system from [raffi.al](https://raffi.al) or the [GitHub Releases](https://github.com/kaleidal/raffi/releases) page.
+
+<Note>
+The latest stable version is **v0.7.0**. Always download from official sources to ensure you get the authentic application.
+</Note>
+
+## Choose Your Platform
+
+<Tabs>
+  <Tab title="Windows">
+    ## Windows Installation
+
+    Raffi provides two installation options for Windows users:
+
+    ### Installer (Recommended)
+
+    The NSIS installer is the easiest way to install Raffi on Windows.
+
+    <Steps>
+      <Step title="Download the installer">
+        Download `Raffi-Setup-x.x.x.exe` from the [releases page](https://github.com/kaleidal/raffi/releases)
+      </Step>
+      <Step title="Run the installer">
+        Double-click the downloaded `.exe` file and follow the installation wizard
+      </Step>
+      <Step title="Launch Raffi">
+        Once installed, Raffi will be available in your Start Menu and Desktop
+      </Step>
+    </Steps>
+
+    ### MSI Portable Package
+
+    For users who prefer a portable installation or need enterprise deployment:
+
+    <Steps>
+      <Step title="Download the MSI package">
+        Download `Raffi-x.x.x.msi` from the releases page
+      </Step>
+      <Step title="Install via MSI">
+        Double-click the `.msi` file or use command line:
+        ```bash
+        msiexec /i Raffi-x.x.x.msi
+        ```
+      </Step>
+    </Steps>
+
+    <Note>
+    Both installers include the required streaming server binary (`decoder-windows-amd64.exe`) for HLS transcoding.
+    </Note>
+
+  </Tab>
+  <Tab title="macOS">
+    ## macOS Installation
+
+    Raffi supports both Intel and Apple Silicon Macs.
+
+    ### DMG Installation (Recommended)
+
+    <Steps>
+      <Step title="Download the DMG">
+        Download the `.dmg` file from [raffi.al](https://raffi.al) or GitHub releases
+      </Step>
+      <Step title="Mount the disk image">
+        Double-click the downloaded DMG file to mount it
+      </Step>
+      <Step title="Drag to Applications">
+        Drag the Raffi app icon to your Applications folder
+      </Step>
+      <Step title="Launch Raffi">
+        Open Raffi from your Applications folder or Launchpad
+      </Step>
+    </Steps>
+
+    ### ZIP Installation
+
+    <Steps>
+      <Step title="Download the ZIP">
+        Download the `.zip` archive from the releases page
+      </Step>
+      <Step title="Extract the archive">
+        Double-click to extract, or use:
+        ```bash
+        unzip Raffi-x.x.x-mac.zip
+        ```
+      </Step>
+      <Step title="Move to Applications">
+        Move the extracted Raffi.app to your Applications folder
+      </Step>
+    </Steps>
+
+    <Warning>
+    **First Launch on macOS**: You may see a security warning since the app is not notarized. Right-click the app and select "Open" to bypass this, or go to System Preferences > Security & Privacy and click "Open Anyway".
+    </Warning>
+
+    <Note>
+    The macOS build includes streaming server binaries for both architectures:
+    - `decoder-aarch64-apple-darwin` (Apple Silicon)
+    - `decoder-x86_64-apple-darwin` (Intel)
+    </Note>
+
+  </Tab>
+  <Tab title="Linux">
+    ## Linux Installation
+
+    Raffi supports multiple Linux package formats for maximum compatibility.
+
+    ### Debian/Ubuntu (.deb)
+
+    For Debian-based distributions including Ubuntu, Linux Mint, and Pop!_OS:
+
+    ```bash
+    # Download the package
+    wget https://github.com/kaleidal/raffi/releases/download/vX.X.X/Raffi-x.x.x.amd64.deb
+
+    # Install with dpkg
+    sudo dpkg -i Raffi-x.x.x.amd64.deb
+
+    # Fix dependencies if needed
+    sudo apt-get install -f
+    ```
+
+    ### Fedora/RHEL (.rpm)
+
+    For Red Hat-based distributions including Fedora, CentOS, and RHEL:
+
+    ```bash
+    # Download the package
+    wget https://github.com/kaleidal/raffi/releases/download/vX.X.X/Raffi-x.x.x.x86_64.rpm
+
+    # Install with rpm
+    sudo rpm -i Raffi-x.x.x.x86_64.rpm
+    ```
+
+    ### AppImage (Universal)
+
+    AppImage works on any Linux distribution without installation:
+
+    <Steps>
+      <Step title="Download the AppImage">
+        Download `Raffi-x.x.x.AppImage` from the releases page
+      </Step>
+      <Step title="Make it executable">
+        ```bash
+        chmod +x Raffi-x.x.x.AppImage
+        ```
+      </Step>
+      <Step title="Run Raffi">
+        ```bash
+        ./Raffi-x.x.x.AppImage
+        ```
+      </Step>
+    </Steps>
+
+    <Note>
+    **AppImage Benefits**: No installation required, no root access needed, and works on any modern Linux distribution.
+    </Note>
+
+    ### Post-Installation
+
+    After installation, Raffi will be available in your application menu under the "Video" category, or you can launch it from the terminal:
+
+    ```bash
+    raffi
+    ```
+
+    <Note>
+    The Linux build includes the streaming server binary `decoder-x86_64-unknown-linux-gnu` for HLS transcoding.
+    </Note>
+
+  </Tab>
+  <Tab title="Mobile">
+    ## Mobile Installation
+
+    Raffi's mobile companion app is available for iOS and Android, offering seamless sync with your desktop installation.
+
+    ### iOS
+
+    <Steps>
+      <Step title="Download from App Store (Coming Soon)">
+        The iOS app will be available on the Apple App Store soon
+      </Step>
+      <Step title="TestFlight Beta">
+        For early access, join the TestFlight beta program (link coming soon)
+      </Step>
+    </Steps>
+
+    **iOS Requirements:**
+    - iOS 13.0 or later
+    - Compatible with iPhone and iPad
+
+    ### Android
+
+    <Steps>
+      <Step title="Download from Play Store (Coming Soon)">
+        The Android app will be available on Google Play Store soon
+      </Step>
+      <Step title="Direct APK Install">
+        Download the APK from GitHub releases and install manually
+      </Step>
+    </Steps>
+
+    **Android Requirements:**
+    - Android 6.0 (Marshmallow) or later
+
+    ### Mobile App Features
+
+    - Browse and search your content library
+    - Native video playback with Expo Video
+    - Continue watching with progress sync
+    - Cross-device authentication via Supabase
+    - Custom torrent-streamer module for on-device streaming
+
+    <Note>
+    **Bundle Identifiers:**
+    - iOS: `al.kaleid.mobile`
+    - Android: `al.kaleid.raffimobile`
+    </Note>
+
+    <Warning>
+    For torrent streaming on mobile, you may need to configure the streaming server URL to point to your desktop app or a remote server. Update `STREAMING_SERVER` in the app settings.
+    </Warning>
+
+  </Tab>
+</Tabs>
+
+## System Requirements
+
+### Desktop (Windows, macOS, Linux)
+
+- **CPU**: Modern dual-core processor (quad-core recommended)
+- **RAM**: 4GB minimum (8GB recommended)
+- **Storage**: 500MB for application + space for cached content
+- **Graphics**: Hardware video acceleration recommended
+- **Network**: Broadband internet connection for streaming
+
+### Mobile (iOS, Android)
+
+- **iOS**: iOS 13.0 or later, 2GB RAM recommended
+- **Android**: Android 6.0 or later, 2GB RAM recommended
+- **Storage**: 200MB for app + space for cached content
+- **Network**: Wi-Fi or 4G/5G connection recommended
+
+## Verifying Your Installation
+
+After installation, verify that Raffi is working correctly:
+
+<Steps>
+  <Step title="Launch Raffi">
+    Open the application from your system's application menu
+  </Step>
+  <Step title="Check version">
+    Look for the version number in the app settings (should be v0.7.0 or higher)
+  </Step>
+  <Step title="Test streaming server">
+    The bundled streaming server should start automatically. Check the app logs if you encounter playback issues.
+  </Step>
+</Steps>
+
+## Updating Raffi
+
+Raffi includes an auto-updater that will notify you when new versions are available.
+
+<Note>
+**Automatic Updates**: Raffi will check for updates on launch and prompt you to install them. You can also manually check for updates in the app settings.
+</Note>
+
+For manual updates, simply download and install the latest version from the releases page. Your settings and library data will be preserved.
+
+## Troubleshooting
+
+### Windows
+
+- **App won't launch**: Make sure you have the latest Visual C++ Redistributable installed
+- **SmartScreen warning**: Click "More info" and "Run anyway" to bypass
+
+### macOS
+
+- **"App is damaged"**: Right-click the app and select "Open" instead of double-clicking
+- **Streaming issues**: Check that the decoder binary has execute permissions
+
+### Linux
+
+- **Missing dependencies**: Run `sudo apt-get install -f` (Debian/Ubuntu) to fix
+- **AppImage won't run**: Ensure FUSE is installed: `sudo apt install fuse`
+
+### Mobile
+
+- **Can't connect to server**: Verify your streaming server URL in app settings
+- **Playback issues**: Ensure you're on the same network as your desktop app (for local streaming)
+
+## Next Steps
+
+Now that you have Raffi installed, head over to the [Quick Start](/quickstart) guide to configure your first addons and start streaming!

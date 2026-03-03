@@ -1,0 +1,452 @@
+---
+title: Building Server Binary
+description: Compile the Go streaming server for HLS transcoding
+---
+
+The Raffi streaming server is a Go application that handles HLS transcoding, torrent streaming, and media delivery. It's compiled into platform-specific binaries and bundled with the desktop app.
+
+## Overview
+
+The server provides:
+
+- **HLS Transcoding**: Converts video streams to HTTP Live Streaming format
+- **Torrent Streaming**: Streams content directly from torrent/magnet links
+- **Media Probing**: Analyzes video files for metadata and codec information
+- **Session Management**: Handles multiple concurrent streaming sessions
+- **Chromecast Support**: Streaming to Chromecast devices
+
+## Prerequisites
+
+- **Go 1.25+** (specified in `go.mod`)
+- **CGO**: Required for SQLite support
+- **C Compiler**:
+  - **Windows**: GCC (via MinGW or TDM-GCC)
+  - **macOS**: Xcode Command Line Tools
+  - **Linux**: GCC (usually pre-installed)
+
+## Project Structure
+
+```
+raffi-server/
+├── main.go                    # Entry point and HTTP server
+├── cast.go                    # Chromecast functionality
+├── clip.go                    # Video clipping
+├── community_addons.go        # Stremio addon integration
+├── go.mod                     # Go module definition
+├── go.sum                     # Dependency checksums
+└── src/
+    ├── session/               # Session management
+    │   └── session.go
+    └── stream/                # Streaming logic
+        ├── torrent.go         # Torrent client
+        └── hls/               # HLS transcoding
+            ├── controller.go
+            ├── lifecycle.go
+            ├── monitor.go
+            ├── playlist.go
+            ├── probe.go
+            ├── session.go
+            ├── transcoder.go
+            ├── throttle_unix.go
+            └── throttle_windows.go
+```
+
+## Dependencies
+
+Key dependencies from `go.mod`:
+
+```go
+module raffi-server
+
+go 1.25
+
+require (
+    github.com/anacrolix/torrent v1.59.1  // Torrent client
+    github.com/gorilla/websocket v1.5.0   // WebSocket support
+    zombiezen.com/go/sqlite v0.13.1       // SQLite database
+    golang.org/x/sys v0.34.0              // System calls
+    // ... and more
+)
+```
+
+## Building Standalone
+
+### Basic Build
+
+To build the server binary directly:
+
+<Steps>
+  <Step title="Navigate to server directory">
+    ```bash
+    cd raffi-server
+    ```
+  </Step>
+
+  <Step title="Build the binary">
+    ```bash
+    go build -o decoder .
+    ```
+
+    This creates a `decoder` binary for your current platform.
+  </Step>
+
+  <Step title="Run the server">
+    ```bash
+    ./decoder
+    ```
+
+    The server starts on `http://localhost:8080` by default.
+  </Step>
+</Steps>
+
+### Optimized Build
+
+For smaller binary size and better performance:
+
+```bash
+go build -ldflags="-s -w" -tags=sqlite_omit_load_extension -o decoder .
+```
+
+**Build Flags:**
+- `-ldflags="-s -w"`: Strip debug info and symbol table
+- `-tags=sqlite_omit_load_extension`: Disable SQLite extension loading
+- `-o decoder`: Output filename
+
+## Platform-Specific Builds
+
+The desktop app uses `raffi-desktop/build_binary.cjs` to compile platform-specific binaries.
+
+### Windows Build
+
+```bash
+CGO_ENABLED=1 \
+CC=gcc \
+go build \
+  -ldflags="-s -w -extldflags '-static'" \
+  -tags=sqlite_omit_load_extension \
+  -o decoder-windows-amd64.exe \
+  .
+```
+
+**Output:** `decoder-windows-amd64.exe`
+
+**Requirements:**
+- GCC compiler (MinGW-w64 or TDM-GCC)
+- Static linking for portability
+
+### Linux Build
+
+```bash
+CGO_ENABLED=1 \
+go build \
+  -ldflags="-s -w -extldflags '-static'" \
+  -tags=sqlite_omit_load_extension \
+  -o decoder-x86_64-unknown-linux-gnu \
+  .
+```
+
+**Output:** `decoder-x86_64-unknown-linux-gnu`
+
+**Requirements:**
+- GCC compiler
+- Static linking for compatibility across distributions
+
+### macOS Build (ARM64)
+
+```bash
+CGO_ENABLED=1 \
+GOARCH=arm64 \
+go build \
+  -ldflags="-s -w" \
+  -tags=sqlite_omit_load_extension \
+  -o decoder-aarch64-apple-darwin \
+  .
+```
+
+**Output:** `decoder-aarch64-apple-darwin`
+
+**Architecture:** Apple Silicon (M1/M2/M3)
+
+### macOS Build (x64)
+
+```bash
+CGO_ENABLED=1 \
+GOARCH=amd64 \
+go build \
+  -ldflags="-s -w" \
+  -tags=sqlite_omit_load_extension \
+  -o decoder-x86_64-apple-darwin \
+  .
+```
+
+**Output:** `decoder-x86_64-apple-darwin`
+
+**Architecture:** Intel-based Macs
+
+## Cross-Compilation
+
+To build for different platforms from a single machine:
+
+<Steps>
+  <Step title="Set target OS and architecture">
+    ```bash
+    export GOOS=linux
+    export GOARCH=amd64
+    ```
+
+    **Valid combinations:**
+    - `GOOS=windows GOARCH=amd64`
+    - `GOOS=linux GOARCH=amd64`
+    - `GOOS=darwin GOARCH=amd64`
+    - `GOOS=darwin GOARCH=arm64`
+  </Step>
+
+  <Step title="Install cross-compilation tools">
+    For cross-compiling with CGO, you need platform-specific C compilers:
+
+    <CodeGroup>
+    ```bash Ubuntu/Debian
+    # For Windows targets
+    sudo apt-get install gcc-mingw-w64
+
+    # For ARM targets
+    sudo apt-get install gcc-aarch64-linux-gnu
+    ```
+
+    ```bash macOS
+    # Install cross-compilation toolchains
+    brew install mingw-w64
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Build with appropriate C compiler">
+    ```bash
+    CGO_ENABLED=1 \
+    CC=x86_64-w64-mingw32-gcc \
+    GOOS=windows \
+    GOARCH=amd64 \
+    go build -o decoder-windows-amd64.exe .
+    ```
+  </Step>
+</Steps>
+
+## Building from Desktop App
+
+The desktop app automatically builds the server binary:
+
+<Steps>
+  <Step title="Navigate to desktop directory">
+    ```bash
+    cd raffi-desktop
+    ```
+  </Step>
+
+  <Step title="Run the server build script">
+    <CodeGroup>
+    ```bash npm
+    npm run server:build
+    ```
+
+    ```bash bun
+    bun run server:build
+    ```
+    </CodeGroup>
+
+    This executes `build_binary.cjs` which:
+    1. Detects your current platform
+    2. Compiles the Go server with appropriate flags
+    3. Outputs to `raffi-desktop/electron/decoder-{platform}`
+  </Step>
+
+  <Step title="Build complete desktop app">
+    <CodeGroup>
+    ```bash npm
+    npm run dist
+    ```
+
+    ```bash bun
+    bun run dist
+    ```
+    </CodeGroup>
+
+    This runs `server:build`, then builds the Electron app with the bundled binary.
+  </Step>
+</Steps>
+
+## Build Output Locations
+
+When building from the desktop app, binaries are placed in:
+
+```
+raffi-desktop/electron/
+├── decoder-windows-amd64.exe           # Windows binary
+├── decoder-x86_64-unknown-linux-gnu    # Linux binary
+├── decoder-aarch64-apple-darwin        # macOS ARM64 binary
+└── decoder-x86_64-apple-darwin         # macOS Intel binary
+```
+
+These binaries are included in the Electron app as `extraResources` during packaging.
+
+## Binary Size Optimization
+
+The build process optimizes binary size:
+
+| Flag | Purpose | Size Reduction |
+|------|---------|----------------|
+| `-ldflags="-s"` | Strip debug info | ~30% |
+| `-ldflags="-w"` | Strip symbol table | ~10% |
+| `-tags=sqlite_omit_load_extension` | Remove SQLite extensions | ~5% |
+| `-extldflags '-static'` | Static linking | Varies |
+
+**Typical binary sizes:**
+- Windows: ~45 MB
+- Linux: ~40 MB
+- macOS: ~42 MB
+
+## Testing the Server
+
+After building, test the server independently:
+
+<Steps>
+  <Step title="Run the binary">
+    ```bash
+    ./decoder
+    ```
+  </Step>
+
+  <Step title="Check the health endpoint">
+    ```bash
+    curl http://localhost:8080/health
+    ```
+
+    Expected response:
+    ```json
+    {"status": "ok"}
+    ```
+  </Step>
+
+  <Step title="Test streaming endpoint">
+    ```bash
+    curl http://localhost:8080/stream/{session-id}/playlist.m3u8
+    ```
+  </Step>
+</Steps>
+
+## Environment Variables
+
+The server supports configuration via environment variables:
+
+```bash
+# Server port (default: 8080)
+export PORT=8080
+
+# Torrent data directory
+export TORRENT_DIR=/tmp/raffi-torrents
+
+# Enable debug logging
+export DEBUG=true
+```
+
+## Deployment
+
+### Desktop App Bundle
+
+The server binary is automatically bundled with the desktop app and managed by Electron:
+
+- **Windows**: `resources/decoder-windows-amd64.exe`
+- **Linux**: `resources/decoder-x86_64-unknown-linux-gnu`
+- **macOS**: `resources/decoder-{arch}-apple-darwin`
+
+The Electron app spawns the server process on startup.
+
+### Standalone Server
+
+For running the server independently (e.g., for mobile clients):
+
+```bash
+# Build optimized binary
+go build -ldflags="-s -w" -o raffi-server .
+
+# Run on custom port
+PORT=9000 ./raffi-server
+```
+
+### Mobile Integration
+
+The mobile app connects to the server for torrent streaming:
+
+1. Desktop app runs server on local network
+2. Mobile app connects via `http://{desktop-ip}:8080`
+3. Server handles transcoding and streaming
+
+## Troubleshooting
+
+### CGO Errors
+
+If you encounter CGO-related build errors:
+
+```bash
+# Verify CGO is enabled
+go env CGO_ENABLED
+
+# Ensure C compiler is available
+gcc --version
+
+# Set CGO explicitly
+export CGO_ENABLED=1
+```
+
+### Static Linking Issues
+
+On Linux, static linking may require additional libraries:
+
+```bash
+sudo apt-get install musl-dev
+
+# Or use dynamic linking
+go build -ldflags="-s -w" -o decoder .
+```
+
+### Missing Dependencies
+
+If build fails due to missing modules:
+
+```bash
+# Download all dependencies
+go mod download
+
+# Verify dependencies
+go mod verify
+
+# Tidy up go.mod and go.sum
+go mod tidy
+```
+
+## Advanced Builds
+
+### Debug Build
+
+For debugging with symbol information:
+
+```bash
+go build -gcflags="all=-N -l" -o decoder-debug .
+```
+
+### Race Detection
+
+For detecting race conditions during development:
+
+```bash
+go build -race -o decoder-race .
+./decoder-race
+```
+
+### Profile-Guided Optimization
+
+For maximum performance:
+
+```bash
+# Build with PGO
+go build -pgo=auto -o decoder .
+```

@@ -1,0 +1,125 @@
+---
+title: Introduction to Raffi
+description: A modern, beautiful streaming platform for your personal media library with full Stremio addon compatibility
+---
+
+# Welcome to Raffi
+
+Raffi is a modern, cross-platform streaming application designed to be a faster, more beautiful alternative to traditional media players. Built with modern web technologies, it provides a Netflix-like experience while leveraging the **Stremio addon ecosystem** for content discovery and streaming.
+
+<Note>
+Raffi is fully compatible with the Stremio addon protocol, allowing you to use any community addon for content sources while enjoying a reimagined interface and enhanced features.
+</Note>
+
+## Why Raffi?
+
+Raffi goes beyond traditional streaming apps with a reimagined interface, improved performance, and additional features like synchronized watch parties, enhanced progress tracking, and Discord integration.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get up and running with Raffi in minutes
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Download and install Raffi on your platform
+  </Card>
+  <Card title="Features" icon="sparkles" href="#key-features">
+    Explore what makes Raffi special
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/kaleidal/raffi">
+    View the source code and contribute
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Rich Media Experience
+
+- **Beautiful, responsive UI** with smooth animations and auto-playing trailers on hover
+- **Multiple video quality options** with intelligent adaptive streaming
+- **Audio and subtitle track selection** with customizable subtitle delay
+- **Picture-in-picture and fullscreen support** for flexible viewing
+
+### Cross-Platform Availability
+
+Raffi is available on all major platforms:
+
+- **Windows** - `.exe` and `.msi` installers
+- **Linux** - `.deb`, `.rpm`, and `.AppImage` packages
+- **macOS** - `.dmg` and `.zip` distributions
+- **iOS & Android** - Mobile companion app built with React Native and Expo
+
+### Watch Together
+
+<CardGroup cols={1}>
+  <Card>
+    Host synchronized watch parties with real-time playback, chat, and presence indicators. Perfect for watching with friends and family, no matter where they are.
+  </Card>
+</CardGroup>
+
+### Library Management
+
+- **Custom lists and collections** to organize your content
+- **Continue watching** with automatic progress tracking
+- **Episode and season management** for TV shows
+- **Universal search** across all your content sources
+
+### Stremio Addon Compatibility
+
+<Note>
+Raffi's killer feature is **full Stremio addon support**, giving you access to the entire community addon ecosystem for movies, TV shows, and more.
+</Note>
+
+- Use any Stremio addon for content sources
+- Multiple addon sources simultaneously
+- Easy addon management and configuration
+- Community-driven content catalogs
+
+### Advanced Features
+
+- **Torrent/magnet link streaming** with built-in HLS transcoding
+- **Local file playback** for your own media collection
+- **Discord Rich Presence** integration to show what you're watching
+- **Auto-updater** to keep Raffi current
+- **Offline mode support** for when you're not connected
+- **Cross-device synchronization** - start on desktop, continue on mobile
+
+## Technology Stack
+
+Raffi is built with modern, performant technologies:
+
+### Desktop App
+- **Electron 39** with **Svelte 5** and TypeScript
+- **HLS.js** for adaptive video streaming
+- **Tailwind CSS** for beautiful UI
+- **Supabase** for authentication and sync
+
+### Mobile App
+- **React Native** (React 19) with **Expo SDK 54**
+- **Expo Video** for native playback
+- **Zustand** for state management
+- **Custom torrent-streamer** module for on-device streaming
+
+### Streaming Server
+- **Go 1.21+** for high-performance HLS transcoding
+- Bundled with desktop app, standalone option for mobile
+
+## Open Source
+
+Raffi is open source and licensed under the MIT License. We welcome contributions from the community!
+
+<CardGroup cols={2}>
+  <Card title="Report Issues" icon="bug" href="https://github.com/kaleidal/raffi/issues">
+    Found a bug? Let us know
+  </Card>
+  <Card title="Contribute" icon="code" href="https://github.com/kaleidal/raffi">
+    Help improve Raffi
+  </Card>
+</CardGroup>
+
+## Get Started
+
+Ready to experience a better way to stream? Head over to the [Installation](/installation) page to download Raffi for your platform, or jump straight to the [Quick Start](/quickstart) guide to start watching in minutes.
+
+<Warning>
+Raffi is currently in version 0.7.0. While fully functional, you may encounter occasional bugs. Please report any issues on GitHub.
+</Warning>

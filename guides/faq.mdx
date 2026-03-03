@@ -1,0 +1,437 @@
+---
+title: Frequently Asked Questions
+description: Common questions about Raffi and streaming
+---
+
+Find answers to the most commonly asked questions about Raffi.
+
+## General Questions
+
+<AccordionGroup>
+  <Accordion title="What is Raffi?">
+    Raffi is a modern, cross-platform streaming application inspired by Stremio. It provides a beautiful, Netflix-like interface for discovering and watching content using community-maintained Stremio addons.
+
+    Raffi is built with modern web technologies and offers enhanced features like watch parties, Discord integration, local file playback, and cross-device synchronization.
+  </Accordion>
+
+  <Accordion title="Is Raffi free to use?">
+    Yes, Raffi is completely free and open-source software licensed under the MIT License. You can download, use, and modify it without any cost.
+
+    Some third-party services that work with Raffi (like Real-Debrid or Premiumize) may require paid subscriptions, but Raffi itself is free.
+  </Accordion>
+
+  <Accordion title="What platforms does Raffi support?">
+    Raffi is available on:
+    - **Windows**: .exe and .msi installers
+    - **Linux**: .deb, .rpm, and .AppImage packages
+    - **macOS**: .dmg and .zip distributions
+    - **iOS & Android**: Mobile companion apps
+
+    Download the latest version from [raffi.al](https://raffi.al) or the GitHub releases page.
+  </Accordion>
+
+  <Accordion title="How is Raffi different from Stremio?">
+    While Raffi is inspired by Stremio and uses the same addon ecosystem, it offers:
+
+    - **Modern UI**: Redesigned interface with smooth animations and Netflix-like experience
+    - **Watch Parties**: Real-time synchronized playback with friends
+    - **Enhanced Performance**: Built with Svelte and modern web technologies
+    - **Discord Integration**: Rich presence showing what you're watching
+    - **Local Library**: Scan and play local media files
+    - **Cross-Device Sync**: Seamless sync between desktop and mobile
+    - **Additional Customization**: UI scaling, seek bar styles, search bar positioning
+  </Accordion>
+
+  <Accordion title="Does Raffi host any content?">
+    No, Raffi does not host any content. It's a player that aggregates links from community-maintained addons, similar to how Stremio works. All content comes from third-party addon sources.
+  </Accordion>
+</AccordionGroup>
+
+## Installation & Setup
+
+<AccordionGroup>
+  <Accordion title="How do I install Raffi?">
+    **Desktop (Windows/Mac/Linux):**
+    1. Visit [raffi.al](https://raffi.al) or the GitHub releases page
+    2. Download the installer for your platform
+    3. Run the installer and follow the prompts
+    4. Launch Raffi
+
+    **Mobile (iOS/Android):**
+    1. Download from the App Store or Google Play (when available)
+    2. Or build from source using Expo
+
+    See the [Installation guide](/installation) for detailed instructions.
+  </Accordion>
+
+  <Accordion title="Do I need to create an account?">
+    No, you can use Raffi without an account in Local Mode (desktop only). However, creating an Ave ID account is recommended to unlock:
+
+    - Cross-device watch history sync
+    - Watch parties with friends
+    - Trakt integration
+    - Cloud backup of settings and favorites
+    - Mobile app access (requires authentication)
+  </Accordion>
+
+  <Accordion title="What are the system requirements?">
+    **Desktop:**
+    - Node.js 18+ or Bun 1.0+ (for development)
+    - 4GB RAM minimum, 8GB recommended
+    - Modern GPU with hardware acceleration support
+    - Windows 10+, macOS 10.14+, or Linux (64-bit)
+
+    **Mobile:**
+    - iOS 13+ or Android 8.0+
+    - 2GB RAM minimum
+    - Active internet connection
+  </Accordion>
+
+  <Accordion title="How do I add my first addon?">
+    1. Click the addons icon (puzzle piece) in the app
+    2. Browse the "Community Addons" section
+    3. Click "Install" next to an addon
+    4. Or manually enter an addon URL in the "Install Addon" field
+    5. Addons providing streams will now appear when you select content
+
+    Popular addons include Torrentio, Orion, and Cinemeta.
+  </Accordion>
+</AccordionGroup>
+
+## Features & Functionality
+
+<AccordionGroup>
+  <Accordion title="What are Stremio addons?">
+    Stremio addons are community-created plugins that provide content sources to Raffi. They can offer:
+
+    - **Streams**: Video sources (torrents, direct links, debrid services)
+    - **Catalogs**: Collections of movies and TV shows
+    - **Metadata**: Information like posters, descriptions, and ratings
+    - **Subtitles**: Subtitle tracks in various languages
+
+    Raffi is fully compatible with the Stremio addon protocol, so any Stremio addon works in Raffi.
+  </Accordion>
+
+  <Accordion title="How do watch parties work?">
+    Watch parties let you watch content synchronously with friends:
+
+    1. Sign in with Ave (required for watch parties)
+    2. Start playing any content
+    3. Click the watch party icon
+    4. Share the party code with friends
+    5. Friends join using the code
+    6. Host controls play/pause/seek, and everyone's playback syncs
+
+    Watch parties use real-time synchronization via Supabase.
+  </Accordion>
+
+  <Accordion title="Can I play local video files?">
+    Yes, on desktop! The Local Library feature lets you:
+
+    1. Add folders containing your media files
+    2. Raffi scans for recognizable patterns (S01E01, movie titles)
+    3. Local files appear as "Local" streams when browsing
+
+    Name files using standard patterns for best results:
+    - TV: `Show.Name.S01E01.mkv`
+    - Movies: `Movie.Name.2024.mkv`
+  </Accordion>
+
+  <Accordion title="What is Discord Rich Presence?">
+    Discord Rich Presence displays your current activity on your Discord profile, showing:
+
+    - What you're watching (title)
+    - Current episode (for TV shows)
+    - Playback status
+
+    Enable it in Settings > Preferences. Discord desktop app must be running for this feature to work.
+  </Accordion>
+
+  <Accordion title="How does Trakt integration work?">
+    Trakt is a service that tracks your watching habits. When connected:
+
+    - Raffi sends start/stop/pause events to Trakt
+    - Your watch history syncs to Trakt.tv
+    - You can use Trakt's recommendations and statistics
+    - Trakt can sync with other apps and services
+
+    Connect Trakt in Settings > Integrations (requires Ave sign-in).
+  </Accordion>
+
+  <Accordion title="Does Raffi support casting?">
+    Yes, the desktop version supports casting to:
+
+    - Chromecast devices
+    - Smart TVs with Google Cast
+    - Other cast-compatible devices
+
+    Click the cast icon during playback and select your device. Note that some stream types may not be compatible with casting.
+  </Accordion>
+</AccordionGroup>
+
+## Streaming & Content
+
+<AccordionGroup>
+  <Accordion title="Why aren't there any streams for my content?">
+    This can happen because:
+
+    - You don't have any stream-providing addons installed
+    - Your addons don't have sources for that specific content
+    - The content is very new or obscure
+    - Addon servers are temporarily down
+
+    **Solutions:**
+    - Install popular stream addons like Torrentio
+    - Check that addons are configured correctly
+    - Try different content to verify addons are working
+  </Accordion>
+
+  <Accordion title="What are debrid services?">
+    Debrid services (Real-Debrid, AllDebrid, Premiumize) are premium services that:
+
+    - Cache popular torrents for instant playback
+    - Provide high-speed direct downloads
+    - Convert torrents to streamable HTTP links
+    - Offer better reliability than peer-to-peer streaming
+
+    Many addons integrate with debrid services. You need a paid subscription to these services (separate from Raffi).
+  </Accordion>
+
+  <Accordion title="How do I change video quality?">
+    Quality depends on the stream you select:
+
+    1. When selecting a stream, look for quality indicators (1080p, 720p, 4K)
+    2. Choose the desired quality stream
+    3. Enable "HD Only" in settings to filter out low-quality streams
+
+    Raffi doesn't transcode quality on the fly - quality is determined by the source stream.
+  </Accordion>
+
+  <Accordion title="Why is playback buffering?">
+    Buffering can occur due to:
+
+    - **Slow internet**: Test your connection speed
+    - **Torrent streams**: Need time to gather peers and download chunks
+    - **Overloaded sources**: Try a different stream
+    - **High quality**: Select a lower quality stream
+
+    **Tips for better performance:**
+    - Use debrid services for instant playback
+    - Choose streams with high seeders (for torrents)
+    - Close other bandwidth-heavy applications
+  </Accordion>
+
+  <Accordion title="Can I download content for offline viewing?">
+    No, Raffi is a streaming-only application. It doesn't support downloading content for offline playback.
+
+    For offline viewing, you would need to use separate download tools and then play the files through Raffi's Local Library feature.
+  </Accordion>
+
+  <Accordion title="How do I add subtitles?">
+    **Embedded subtitles:**
+    - Click the subtitle button during playback
+    - Select from available subtitle tracks
+
+    **External subtitles:**
+    - Install subtitle addons (like OpenSubtitles)
+    - Or upload your own .srt file using "Upload .srt" in the subtitle menu
+
+    **Subtitle timing:**
+    - Use the delay controls to sync subtitles with audio
+  </Accordion>
+</AccordionGroup>
+
+## Technical Questions
+
+<AccordionGroup>
+  <Accordion title="What is the raffi-server component?">
+    raffi-server is a Go-based HLS transcoding server bundled with the desktop app. It:
+
+    - Transcodes video streams to HLS format
+    - Handles torrent/magnet link streaming
+    - Provides streaming endpoints for the player
+    - Can be used as a remote server for mobile devices
+
+    It starts automatically when you launch Raffi desktop and runs in the background.
+  </Accordion>
+
+  <Accordion title="How does cross-device sync work?">
+    Raffi uses Supabase (PostgreSQL) for cloud synchronization:
+
+    - **Authentication**: Ave ID provides the user identity
+    - **Watch history**: Synced automatically when signed in
+    - **Progress**: Saves per-episode/movie progress
+    - **Settings**: Some preferences sync across devices
+
+    Sign in with the same Ave account on all devices to enable sync.
+  </Accordion>
+
+  <Accordion title="Is my data private?">
+    Yes, Raffi is designed with privacy in mind:
+
+    - No content titles or URLs are sent to analytics (if enabled)
+    - Watch history is stored in your account, not shared publicly
+    - Addons communicate directly with their servers, not through Raffi
+    - You can disable analytics in Settings > Privacy
+    - You can use Local Mode without creating an account
+
+    See the [Privacy](#) documentation for details.
+  </Accordion>
+
+  <Accordion title="Can I use Raffi with a VPN?">
+    Yes, Raffi works fine with VPNs. However:
+
+    - VPNs may affect streaming speeds
+    - Some addon sources might be geo-restricted
+    - Cast discovery may not work (cast devices need to be on the same network)
+    - Watch parties require working internet connectivity
+
+    If you experience issues, try disabling the VPN temporarily to diagnose.
+  </Accordion>
+
+  <Accordion title="How do I build Raffi from source?">
+    **Desktop:**
+    ```bash
+    git clone https://github.com/kaleidal/raffi.git
+    cd raffi/raffi-desktop
+    bun install
+    bun run electron:dev
+    ```
+
+    **Mobile:**
+    ```bash
+    cd raffi-mobile
+    npm install
+    npm start
+    ```
+
+    See the [Development guide](#) for full instructions.
+  </Accordion>
+
+  <Accordion title="Where is data stored?">
+    **Desktop:**
+    - **Windows**: `%APPDATA%/Raffi`
+    - **macOS**: `~/Library/Application Support/Raffi`
+    - **Linux**: `~/.config/Raffi`
+
+    Stores: local database, cache, logs, and settings.
+
+    **Mobile:**
+    - Uses React Native AsyncStorage
+    - Stored in app-specific directories
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Raffi won't start or crashes on launch">
+    **Try these steps:**
+
+    1. Restart your computer
+    2. Check that you meet system requirements
+    3. Update your graphics drivers
+    4. Disable antivirus temporarily to test
+    5. Delete the app data directory and reinstall
+    6. Check for conflicting applications
+
+    If the issue persists, report it on [GitHub Issues](https://github.com/kaleidal/raffi/issues).
+  </Accordion>
+
+  <Accordion title="I forgot my Ave password">
+    Ave ID handles authentication. To reset your password:
+
+    1. Visit [aveid.net](https://aveid.net)
+    2. Click "Forgot password" or contact Ave support
+    3. Follow their password reset process
+
+    Raffi doesn't manage Ave accounts directly.
+  </Accordion>
+
+  <Accordion title="Streams load but won't play">
+    This usually indicates:
+
+    - Incompatible video format/codec
+    - Network connectivity issues
+    - Corrupted stream source
+
+    **Solutions:**
+    - Try a different stream
+    - Clear cache and restart
+    - Check firewall/antivirus settings
+    - Update Raffi to the latest version
+
+    See the [Troubleshooting guide](/guides/troubleshooting) for more details.
+  </Accordion>
+
+  <Accordion title="Watch history isn't syncing">
+    **Verify:**
+    - You're signed in with Ave on all devices
+    - "Save watch history" is enabled in Settings > Privacy
+    - You have an active internet connection
+    - You're not in Local Mode (desktop)
+
+    **Fix:**
+    - Sign out and sign back in
+    - Force close and reopen the app
+    - Check Supabase service status
+  </Accordion>
+</AccordionGroup>
+
+## Contributing & Support
+
+<AccordionGroup>
+  <Accordion title="How can I contribute to Raffi?">
+    Raffi is open-source and welcomes contributions:
+
+    - **Code**: Submit pull requests on [GitHub](https://github.com/kaleidal/raffi)
+    - **Bug reports**: Create issues with detailed reproduction steps
+    - **Feature requests**: Suggest new features in GitHub Discussions
+    - **Documentation**: Help improve guides and docs
+    - **Translations**: Contribute language translations
+    - **Testing**: Test beta builds and report issues
+
+    See the CONTRIBUTING guide in the repository for details.
+  </Accordion>
+
+  <Accordion title="Where can I get help?">
+    - **Documentation**: Start with these guides
+    - **GitHub Issues**: Search for similar issues or create a new one
+    - **Community**: Join discussions on GitHub or Discord (if available)
+    - **Troubleshooting**: See the [Troubleshooting guide](/guides/troubleshooting)
+
+    When asking for help, include:
+    - Platform and app version
+    - Steps to reproduce the issue
+    - Error messages or screenshots
+  </Accordion>
+
+  <Accordion title="Is there a mobile app?">
+    Yes! Raffi has mobile apps for iOS and Android built with React Native and Expo.
+
+    Features on mobile:
+    - Browse and search content
+    - Continue watching
+    - Stream playback with native video player
+    - Settings sync with desktop
+
+    **Limitations:**
+    - Torrent streams require connection to desktop/remote streaming server
+    - Some desktop features (Local Library, Discord) unavailable on mobile
+  </Accordion>
+
+  <Accordion title="Can I donate or support development?">
+    Raffi is a passion project by [Kaleidal](https://github.com/kaleidal). If you'd like to support:
+
+    - Star the repository on GitHub
+    - Share Raffi with friends
+    - Contribute code or documentation
+    - Report bugs and help improve quality
+
+    Check the GitHub repository for sponsor links if available.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+Can't find your question? Check the [Troubleshooting guide](/guides/troubleshooting) or search [GitHub Issues](https://github.com/kaleidal/raffi/issues).
+</Note>

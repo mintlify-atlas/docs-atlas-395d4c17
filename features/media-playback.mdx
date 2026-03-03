@@ -1,0 +1,242 @@
+---
+title: 'Media Playback'
+description: 'Advanced video playback features including HLS streaming, quality selection, and audio/subtitle management'
+---
+
+Raffi provides a powerful video player with support for multiple formats, adaptive streaming, and extensive customization options.
+
+## Supported Formats
+
+Raffi can play content from multiple sources:
+
+- **Torrent/Magnet Links** - Stream directly from torrents with automatic file selection
+- **Direct HTTP/HTTPS Streams** - Play from direct video URLs
+- **Local Files** - Browse and play videos from your computer
+- **HLS (HTTP Live Streaming)** - Adaptive bitrate streaming with automatic quality adjustment
+
+## Video Player Features
+
+### HLS Streaming
+
+Raffi uses HLS.js for adaptive streaming, providing smooth playback with automatic quality adjustments based on your network conditions.
+
+<Note>
+The player automatically detects HLS manifests (.m3u8 files) and uses optimized buffering strategies for seamless playback.
+</Note>
+
+**Buffer Configuration:**
+- Maximum buffer length: 50 seconds
+- Back buffer: 30 seconds maintained for rewinding
+- Adaptive buffering based on network conditions
+
+### Quality Selection
+
+The player automatically selects the best quality based on your connection, but you can manually control quality through the stream selection interface:
+
+<Steps>
+  <Step title="Open Stream Selection">
+    Click the streams button in the player controls to view available quality options.
+  </Step>
+  
+  <Step title="Choose Your Quality">
+    Select from available quality options provided by your addons. Common options include 1080p, 720p, 480p, and more.
+  </Step>
+  
+  <Step title="Playback Resumes">
+    The player will reload the stream at your selected quality and resume from your current position.
+  </Step>
+</Steps>
+
+### Audio Track Management
+
+Switch between multiple audio tracks for content with different language options or audio formats:
+
+<Info>
+Raffi supports advanced audio codecs including EAC-3 (Dolby Digital Plus) for high-quality surround sound.
+</Info>
+
+**To change audio tracks:**
+
+<Steps>
+  <Step title="Open Audio Selection">
+    Click the audio icon in the player controls.
+  </Step>
+  
+  <Step title="View Available Tracks">
+    Browse all embedded audio streams, showing language and format information.
+  </Step>
+  
+  <Step title="Select Track">
+    Choose your preferred audio track. The player will reload the stream with the new audio.
+  </Step>
+</Steps>
+
+### Subtitle Support
+
+Raffi provides comprehensive subtitle support with both embedded and external subtitle sources:
+
+**Subtitle Sources:**
+- **Addon Subtitles** - Automatically fetched from configured Stremio addons
+- **Embedded Subtitles** - Extracted from video files
+- **Local Subtitle Files** - Load .srt or .vtt files from your computer
+
+**Supported Formats:**
+- WebVTT (.vtt)
+- SubRip (.srt)
+
+#### Managing Subtitles
+
+<Steps>
+  <Step title="Open Subtitle Selection">
+    Click the subtitles icon (CC) in the player controls.
+  </Step>
+  
+  <Step title="Choose a Track">
+    Select from available subtitle tracks, grouped by source (Addon, Embedded, Local).
+  </Step>
+  
+  <Step title="Adjust Timing (Optional)">
+    Use the subtitle delay controls to sync subtitles with audio if needed.
+  </Step>
+  
+  <Step title="Load Local Subtitles (Optional)">
+    Click "Add Local Subtitle" to browse and load a subtitle file from your computer.
+  </Step>
+</Steps>
+
+#### Subtitle Delay Adjustment
+
+If subtitles are out of sync with the audio:
+
+1. Open the subtitle selection modal
+2. Use the delay controls to adjust timing in seconds
+3. Positive values delay subtitles, negative values show them earlier
+4. Changes apply instantly to the current playback
+
+<Tip>
+Subtitle position automatically adjusts when player controls are visible to avoid overlap.
+</Tip>
+
+## Playback Controls
+
+### Keyboard Shortcuts
+
+Control playback efficiently with keyboard shortcuts:
+
+| Key | Action |
+|-----|--------|
+| **Space** | Play/Pause |
+| **Arrow Left** | Seek backward 5 seconds |
+| **Arrow Right** | Seek forward 5 seconds |
+| **Arrow Up** | Increase volume |
+| **Arrow Down** | Decrease volume |
+| **F** or **Escape** | Toggle fullscreen |
+
+<Note>
+Seek direction can be inverted based on your seek bar style preference (normal vs. Raffi style).
+</Note>
+
+### Seek Bar Styles
+
+Raffi offers two seek bar display modes:
+
+**Normal Mode:**
+- Shows elapsed time on the left
+- Remaining time on the right
+- Seek bar fills from left to right
+
+**Raffi Mode:**
+- Shows remaining time (time-to-end)
+- Inverted seek controls for a unique experience
+- Seek bar represents time remaining
+
+Change your preference in Settings > Player > Seek Bar Style.
+
+### Picture-in-Picture
+
+Continue watching while using other applications:
+
+1. Right-click on the video player
+2. Select "Picture in Picture"
+3. The video window stays on top of other applications
+
+### Object Fit Toggle
+
+Switch between video display modes to match your content:
+
+- **Contain** - Displays the entire video with letterboxing if needed
+- **Cover** - Fills the player area, potentially cropping the video
+
+Click the aspect ratio button in player controls to toggle between modes.
+
+## Advanced Features
+
+### Chapter Support
+
+For videos with embedded chapter metadata:
+
+- Chapters are automatically detected and displayed
+- Navigate between chapters using the chapter selector
+- Chapter titles appear during playback transitions
+
+### Automatic Episode Progression
+
+When watching TV series:
+
+- A "Next Episode" prompt appears near the end of each episode
+- Automatically advances to the next episode when the countdown completes
+- Skip the countdown by clicking the prompt
+
+### Error Recovery
+
+The player includes robust error handling:
+
+- **Network Errors** - Automatic retry up to 5 times
+- **Media Errors** - Attempts recovery up to 3 times
+- **Manual Retry** - Use the retry button if automatic recovery fails
+
+<Info>
+If a stream consistently fails, try selecting a different stream source from the streams menu.
+</Info>
+
+### Progress Tracking
+
+Your viewing progress is automatically saved:
+
+- Resume from where you left off
+- Progress syncs across devices when signed in
+- Episodes marked as watched when 90% complete
+- View progress indicators in your library
+
+## Performance Optimizations
+
+### Torrent Streaming
+
+When streaming from torrents:
+
+- **Smart buffering** - Prioritizes pieces needed for immediate playback
+- **File selection** - Choose specific files from multi-file torrents
+- **Progress indicators** - View download progress and peer information
+- **Background processing** - Continues downloading while you watch
+
+### Local File Playback
+
+Local files benefit from optimized playback:
+
+- Direct playback without transcoding when possible
+- Instant seeking with no buffering
+- Metadata extraction for audio tracks and subtitles
+- Frame-accurate positioning
+
+### HLS Server Integration
+
+Raffi includes a built-in Go-based transcoding server:
+
+- Converts incompatible formats to HLS on-the-fly
+- Handles EAC-3 audio transcoding for compatibility
+- Slice-based seeking for efficient navigation
+- Automatic cleanup when playback ends
+
+<Tip>
+The HLS server runs locally on your machine, ensuring your streams remain private and don't require cloud processing.
+</Tip>

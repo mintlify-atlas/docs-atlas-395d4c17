@@ -1,0 +1,308 @@
+---
+title: Configuration & Settings
+description: Customize Raffi to match your streaming preferences
+---
+
+Raffi offers a wide range of settings to personalize your streaming experience. Access settings through the settings icon in the app.
+
+## Playback Settings
+
+Control how content plays automatically and how episodes transition.
+
+### Auto-play Next Episode
+
+Automatically starts the next episode when the current one finishes. Perfect for binge-watching TV shows without manual intervention.
+
+- **Default**: Enabled
+- **Location**: Settings > Playback
+
+### Auto-skip Intro
+
+When enabled, Raffi automatically skips detected intro sequences, getting you straight to the content.
+
+- **Default**: Disabled
+- **Location**: Settings > Playback
+
+<Note>
+Intro detection depends on metadata from your addons. Not all content will have intro markers.
+</Note>
+
+## Stream Preferences
+
+Filter and prioritize streams based on quality and source type.
+
+### HD Only Mode
+
+Restricts stream selection to only high-definition sources (720p and above). Lower quality streams will be hidden from the stream list.
+
+- **Default**: Disabled
+- **Location**: Settings > Stream Preferences
+
+<Warning>
+Enabling HD Only may reduce the number of available streams, especially for older or less popular content.
+</Warning>
+
+### Prefer Debrid Streams
+
+Prioritizes premium debrid services (Real-Debrid, AllDebrid, Premiumize) at the top of the stream list. These services typically offer:
+
+- Higher reliability and speeds
+- Better availability for popular content
+- Cached torrents for instant playback
+
+- **Default**: Enabled
+- **Location**: Settings > Stream Preferences
+
+## User Interface
+
+### UI Scale / Zoom Level
+
+Adjust the interface scale to match your screen size and viewing distance.
+
+- **Range**: 0.5x to 2.0x
+- **Default**: 1.0x
+- **Platform**: Desktop only
+- **Location**: Settings > Preferences
+
+### Seek Bar Style
+
+Choose between two seek bar designs:
+
+- **Raffi**: Inverted style with unique visual design
+- **Normal**: Traditional progress bar style
+
+- **Default**: Raffi
+- **Location**: Settings > Preferences
+
+### Search Bar Position
+
+Configure where the search bar appears on the home screen:
+
+- **Auto**: Dynamically positions based on content
+- **Header**: Fixed at the top of the screen
+- **Bottom**: Fixed at the bottom of the screen
+
+- **Default**: Auto
+- **Platform**: Desktop only
+- **Location**: Settings > Preferences
+
+### Hero Source
+
+Select which catalog provides the featured content on your home screen:
+
+- **Cinemeta**: Default metadata provider
+- **Trakt Recommendations**: Personalized recommendations (requires Trakt connection)
+- **Addon Catalogs**: Any catalog from your installed addons
+
+- **Default**: Cinemeta
+- **Platform**: Desktop only
+- **Location**: Settings > Preferences
+
+## Privacy & Analytics
+
+Control what data Raffi collects to improve the app.
+
+### Share Anonymous Analytics
+
+Tracks feature usage and stream types without collecting specific titles or URLs. This helps the development team understand:
+
+- Which features are most used
+- Where users encounter issues
+- Performance metrics
+
+- **Default**: Depends on build configuration
+- **Location**: Settings > Privacy & Analytics
+
+<Note>
+Raffi never collects personally identifiable streaming data. Your watch history and content preferences stay private.
+</Note>
+
+### Session Replay
+
+Records UI interactions to help debug issues. Text inputs are automatically masked for privacy.
+
+- **Requirement**: Anonymous analytics must be enabled
+- **Default**: Disabled
+- **Location**: Settings > Privacy & Analytics
+
+### Save Watch History
+
+Keeps track of what you've watched, including:
+
+- Viewing progress per episode/movie
+- Last watched timestamp
+- Watch status (watched/unwatched)
+
+- **Default**: Enabled
+- **Location**: Settings > Privacy
+
+<Warning>
+Disabling this setting will prevent the "Continue Watching" feature from working and won't sync progress across devices.
+</Warning>
+
+## Integrations
+
+### Discord Rich Presence
+
+Displays your current watching activity on your Discord profile, showing:
+
+- Content title (movie or TV show)
+- Current episode (for TV shows)
+- Playback status
+
+- **Default**: Enabled
+- **Platform**: Desktop only
+- **Location**: Settings > Preferences
+- **Requirement**: Discord must be running
+
+### Trakt Integration
+
+Sync your watch activity to [Trakt.tv](https://trakt.tv) for:
+
+- Cross-platform watch history
+- Personalized recommendations
+- Statistics and insights
+- Social features
+
+**To connect Trakt:**
+
+1. Navigate to Settings > Integrations
+2. Click "Connect" next to Trakt
+3. Sign in with your Trakt account in the browser
+4. Authorize Raffi to access your account
+
+<Note>
+You must be signed in with Ave before connecting Trakt. Trakt integration requires configuration in your build.
+</Note>
+
+## Local Library
+
+Scan local media files and make them available as streams.
+
+<Note>
+Local Library is only available on the desktop version of Raffi.
+</Note>
+
+### Adding Folders
+
+1. Navigate to Settings > Local Library
+2. Click "Add Folder"
+3. Select a directory containing your media files
+4. Raffi will scan for recognizable file patterns (e.g., S01E01, S02E03)
+
+### File Naming
+
+For best results, name your files using these patterns:
+
+**TV Shows:**
+- `Show.Name.S01E01.mkv`
+- `Show.Name.1x01.mkv`
+- `Show Name - S01E01 - Episode Title.mp4`
+
+**Movies:**
+- `Movie.Name.2024.mkv`
+- `Movie Name (2024).mp4`
+
+### Rescanning
+
+Click the "Rescan" button to update the local library index after:
+
+- Adding new files to existing folders
+- Renaming files
+- Removing files
+
+## Storage Management
+
+### Clear Cache
+
+Clears cached metadata including:
+
+- Movie/TV show posters and backdrops
+- Episode information
+- Catalog data
+
+This can free up storage space but will require re-downloading metadata when browsing.
+
+- **Location**: Settings > Storage
+
+### Clear Watch History
+
+Permanently removes all watch progress data. This action cannot be undone.
+
+- **Location**: Settings > Storage
+
+<Warning>
+Clearing watch history will remove all viewing progress and cannot be recovered. This affects all synced devices.
+</Warning>
+
+## Account Settings
+
+### Ave Authentication
+
+Raffi uses [Ave ID](https://aveid.net) for authentication and cross-device synchronization.
+
+**Sign in to enable:**
+- Watch history sync across devices
+- Custom lists and favorites
+- Watch parties
+- Trakt integration
+- Settings sync
+
+**To sign in:**
+
+1. Click "Continue with Ave" on the login screen or in settings
+2. Complete authentication in your browser
+3. Return to Raffi to complete the sign-in process
+
+### Local Mode
+
+On desktop, you can use Raffi without signing in (Local Mode), but some features will be unavailable:
+
+- Watch parties
+- Cross-device sync
+- Trakt integration
+- Cloud backup of watch history
+
+## Subtitle Settings
+
+Access subtitle settings during playback by clicking the subtitle button.
+
+### Subtitle Delay
+
+Adjust subtitle timing if they're out of sync with audio:
+
+- Use **+0.25s** / **-0.25s** buttons for fine adjustments
+- Range: -30 to +30 seconds
+- Click **Reset** to return to 0
+
+### Local Subtitles
+
+Upload your own subtitle files:
+
+1. Click "Upload .srt" in the subtitle menu
+2. Select an SRT file from your computer
+3. The subtitle will be immediately applied
+
+<Note>
+Currently only SRT format is supported for local subtitle uploads.
+</Note>
+
+## Cast Settings
+
+Raffi supports casting to compatible devices using Google Cast protocol.
+
+### Casting to Devices
+
+1. Click the cast icon during playback
+2. Select your target device (Chromecast, smart TV, etc.)
+3. Playback will transfer to the selected device
+
+**Available controls while casting:**
+- Play/Pause
+- Seek
+- Volume adjustment
+- Stop casting
+
+<Note>
+Cast functionality is only available on desktop. Some stream types may not support casting.
+</Note>

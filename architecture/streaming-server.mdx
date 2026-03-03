@@ -1,0 +1,565 @@
+---
+title: Streaming Server Architecture
+description: Technical architecture of Raffi's Go-based HLS streaming server
+---
+
+The Raffi streaming server is a high-performance Go application that handles video transcoding, torrent streaming, and HLS delivery for both desktop and mobile clients.
+
+## Tech Stack
+
+### Core Technologies
+
+- **Go 1.25**: High-performance compiled language
+- **FFmpeg**: Video transcoding engine
+- **anacrolix/torrent**: BitTorrent client library
+- **Standard library**: HTTP server and routing
+
+### Key Dependencies
+
+From `raffi-server/go.mod:5-87`:
+
+```go
+require (
+    github.com/anacrolix/torrent v1.59.1
+    github.com/pion/webrtc/v4 v4.0.0      // WebRTC support
+    github.com/gorilla/websocket v1.5.0   // WebSocket connections
+    go.etcd.io/bbolt v1.3.6               // Embedded database
+    modernc.org/sqlite v1.21.1            // SQLite driver
+    zombiezen.com/go/sqlite v0.13.1       // Alternative SQLite
+)
+```
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Streaming Server                      │
+│                  (raffi-server/)                        │
+│                                                         │
+│  ┌───────────────────────────────────────────────────┐ │
+│  │              HTTP Server (main.go)                │ │
+│  │                                                   │ │
+│  │  Routes:                                          │ │
+│  │  ├── POST   /sessions            Create session  │ │
+│  │  ├── GET    /sessions/:id        Get info       │ │
+│  │  ├── GET    /sessions/:id/stream HLS playlist   │ │
+│  │  ├── GET    /sessions/:id/stream/*.ts segments  │ │
+│  │  ├── POST   /sessions/:id/audio  Switch audio   │ │
+│  │  ├── POST   /cleanup              Clean session │ │
+│  │  ├── POST   /cast/token           Cast auth     │ │
+│  │  └── GET    /torrents/*           Torrent files │ │
+│  └───────────────────────────────────────────────────┘ │
+│                                                         │
+│  ┌────────────────┐  ┌────────────────┐  ┌──────────┐ │
+│  │    Session     │  │   Torrent      │  │   HLS    │ │
+│  │    Store       │  │   Streamer     │  │Controller│ │
+│  │                │  │                │  │          │ │
+│  │  - In-memory   │  │  - Download    │  │ - FFmpeg │ │
+│  │  - Session IDs │  │  - Peer mgmt   │  │ - Transcode│
+│  │  - Metadata    │  │  - Streaming   │  │ - Segments│ │
+│  └────────────────┘  └────────────────┘  └──────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Server Core
+
+### Main Server
+
+Location: `main.go:26-114`
+
+```go
+type Server struct {
+    sessions        session.Store
+    torrentStreamer *stream.TorrentStreamer
+    hlsController   *hls.Controller
+    probeMu         sync.Mutex
+    probeCooldown   map[string]time.Time
+    castMu          sync.RWMutex
+    castTokens      map[string]CastToken
+}
+```
+
+**Server Components**:
+
+1. **Session Store**: In-memory session management
+2. **Torrent Streamer**: BitTorrent client for magnet links
+3. **HLS Controller**: FFmpeg-based transcoding pipeline
+4. **Probe Cooldown**: Rate limiting for metadata probing
+5. **Cast Tokens**: Authentication for Chromecast LAN access
+
+### Server Initialization
+
+Location: `main.go:36-113`
+
+```go
+func main() {
+    srv := &Server{
+        sessions:        session.NewMemoryStore(),
+        torrentStreamer: stream.NewTorrentStreamer(
+            filepath.Join(os.TempDir(), "raffi-torrents")
+        ),
+        hlsController:   hls.NewController(),
+        probeCooldown:   make(map[string]time.Time),
+        castTokens:      make(map[string]CastToken),
+    }
+    
+    // Listen address: RAFFI_SERVER_ADDR or 127.0.0.1:6969
+    addr := os.Getenv("RAFFI_SERVER_ADDR")
+    if addr == "" {
+        addr = "127.0.0.1:6969"
+    }
+    
+    // Start HTTP server with CORS and LAN guard
+    http.Serve(listener, withCORS(withLANGuard(srv, mux)))
+}
+```
+
+### Cleanup & Lifecycle
+
+Location: `main.go:47-88`
+
+```go
+// Signal handling for graceful shutdown
+sigChan := make(chan os.Signal, 1)
+signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+go func() {
+    <-sigChan
+    log.Println("Received shutdown signal, cleaning up...")
+    
+    // Close torrent client
+    srv.torrentStreamer.Close()
+    
+    // Remove torrent files
+    os.RemoveAll(filepath.Join(os.TempDir(), "raffi-torrents"))
+    os.RemoveAll(filepath.Join(os.TempDir(), "raffi"))
+    
+    os.Exit(0)
+}()
+
+// Background cleanup every 30 seconds
+go func() {
+    ticker := time.NewTicker(30 * time.Second)
+    for range ticker.C {
+        srv.hlsController.CleanupOrphanedSessions()
+        srv.cleanupExpiredCastTokens()
+    }
+}()
+```
+
+## HTTP API
+
+### Session Management
+
+#### Create Session
+
+Location: `main.go:143-194`
+
+```
+POST /sessions
+Content-Type: application/json
+
+{
+  "source": "https://example.com/video.mp4",
+  "kind": "http",
+  "startTime": 0.0,
+  "fileIdx": 0  // Optional, for torrent multi-file
+}
+
+Response:
+{
+  "id": "session-uuid"
+}
+```
+
+**Session Types**:
+- `http`: Direct HTTP(S) URL
+- `torrent`: Magnet link or torrent file
+
+#### Get Session Info
+
+Location: `main.go:251-362`
+
+```
+GET /sessions/:id
+
+Response:
+{
+  "id": "session-uuid",
+  "source": "...",
+  "kind": "http",
+  "durationSeconds": 7200.5,
+  "audioIndex": 0,
+  "availableStreams": [
+    {
+      "index": 0,
+      "type": "audio",
+      "codec": "aac",
+      "language": "eng",
+      "title": "English 5.1"
+    }
+  ],
+  "chapters": [
+    {
+      "startTime": 0,
+      "endTime": 120,
+      "title": "Opening"
+    }
+  ]
+}
+```
+
+**Metadata Probing**:
+- FFprobe extracts duration, chapters, audio tracks
+- Cooldown mechanism prevents excessive probing
+- Retry logic with exponential backoff
+- Torrent-specific handling for incomplete downloads
+
+#### Stream Session
+
+Location: `main.go:364-531`
+
+```
+GET /sessions/:id/stream?seek=120.5&seek_id=abc&force_slice=1
+
+Response: (HLS playlist)
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:10
+#EXT-X-START:TIME-OFFSET=120.5,PRECISE=YES
+#EXTINF:10.0,
+segment0.ts
+#EXTINF:10.0,
+segment1.ts
+...
+```
+
+**Query Parameters**:
+- `seek`: Start time in seconds
+- `seek_id`: Seek operation ID for deduplication
+- `force_slice`: Force new slice creation
+
+**Headers**:
+- `X-Raffi-Slice-Start`: Actual slice start time
+
+### Torrent Streaming
+
+Location: `src/stream/torrent.go`
+
+#### Torrent Streamer
+
+```go
+type TorrentStreamer struct {
+    client      *torrent.Client
+    torrents    map[string]*torrent.Torrent  // infoHash -> torrent
+    streamURLs  map[string]string             // infoHash -> URL
+    downloadDir string
+}
+```
+
+**Functionality**:
+1. **Add Torrent**: Parse magnet/file, select file to stream
+2. **Prioritize Pieces**: Download sequentially from start
+3. **Serve HTTP**: Expose torrent file as HTTP endpoint
+4. **Status Reporting**: Track download progress
+
+#### Torrent Flow
+
+```
+Magnet Link → Torrent Client → Select File → Prioritize Pieces
+                    ↓
+              HTTP Server (internal)
+                    ↓
+              Session Source URL
+                    ↓
+              HLS Transcoding
+```
+
+### HLS Transcoding
+
+Location: `src/stream/hls/`
+
+#### HLS Controller
+
+```go
+type Controller struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+type Session struct {
+    ID          string
+    Source      string
+    StartTime   float64
+    Slices      []*Slice
+    CurrentSlice *Slice
+    AudioIndex  int
+}
+
+type Slice struct {
+    Dir         string          // Output directory
+    FFmpegCmd   *exec.Cmd       // FFmpeg process
+    StartTime   float64         // Slice start position
+    AudioIndex  int             // Selected audio track
+}
+```
+
+#### FFmpeg Pipeline
+
+**Transcoding Command**:
+```bash
+ffmpeg -ss <startTime> \
+       -i <source> \
+       -map 0:v:0 \
+       -map 0:a:<audioIndex> \
+       -c:v libx264 \
+       -preset veryfast \
+       -crf 23 \
+       -c:a aac \
+       -b:a 192k \
+       -f hls \
+       -hls_time 10 \
+       -hls_list_size 0 \
+       -hls_segment_filename segment%d.ts \
+       child.m3u8
+```
+
+**Parameters**:
+- `-ss`: Seek to start time
+- `-map 0:v:0`: Select first video stream
+- `-map 0:a:<audioIndex>`: Select audio track
+- `-c:v libx264`: H.264 video codec
+- `-preset veryfast`: Fast encoding
+- `-crf 23`: Quality level (lower = better)
+- `-c:a aac`: AAC audio codec
+- `-hls_time 10`: 10-second segments
+
+#### Slice Management
+
+**Why Slices?**
+- Seeking without restarting FFmpeg
+- Memory efficient for long videos
+- Progressive cleanup of old segments
+
+**Slice Lifecycle**:
+1. Create slice on seek or initial playback
+2. FFmpeg transcodes to temp directory
+3. Serve segments as they're created
+4. Track served segments
+5. Cleanup when new slice starts
+
+#### Metadata Probing
+
+**FFprobe Command**:
+```bash
+ffprobe -v quiet \
+        -print_format json \
+        -show_format \
+        -show_chapters \
+        -show_streams \
+        <source>
+```
+
+**Extracted Data**:
+- Duration
+- Audio streams (codec, language, title)
+- Video streams
+- Chapters with timestamps
+
+### Audio Track Switching
+
+Location: `main.go:116-141`
+
+```
+POST /sessions/:id/audio
+Content-Type: application/json
+
+{
+  "index": 1
+}
+```
+
+**Process**:
+1. Stop current FFmpeg process
+2. Create new slice with different audio map
+3. Restart transcoding
+4. Client detects new slice via `X-Raffi-Slice-Start` header
+
+### Cleanup
+
+Location: `main.go:628-663`
+
+```
+POST /cleanup?id=session-uuid
+DELETE /cleanup?id=session-uuid
+```
+
+**Cleanup Actions**:
+1. Stop HLS transcoding (kill FFmpeg)
+2. Remove torrent if torrent session
+3. Delete session from store
+4. Remove temporary files
+
+## Security
+
+### CORS Configuration
+
+Location: `main.go:607-626`
+
+```go
+func withCORS(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        origin := r.Header.Get("Origin")
+        if origin != "" {
+            w.Header().Set("Access-Control-Allow-Origin", origin)
+        }
+        w.Header().Set("Access-Control-Allow-Methods", 
+            "GET, POST, OPTIONS, DELETE, HEAD")
+        w.Header().Set("Access-Control-Allow-Headers", 
+            "Content-Type, Range, X-Raffi-Cast-Token")
+        // ...
+    })
+}
+```
+
+### LAN Guard
+
+**Cast Token System**:
+- When server binds to non-loopback (0.0.0.0), enables LAN mode
+- Requires `cast_token` for external requests
+- Tokens generated with expiration
+- Desktop app requests token before casting
+
+**Token Flow**:
+```
+Desktop App → POST /cast/token → Server generates token
+                ↓
+    Chromecast requests include ?cast_token=xyz
+                ↓
+        Server validates token
+```
+
+## Performance Optimizations
+
+### Concurrency
+
+- **Goroutines**: Each session can transcode concurrently
+- **Mutex Protection**: Read/write locks for shared state
+- **Channel-based Cleanup**: Background worker goroutines
+
+### Memory Management
+
+- **Streaming**: Files are streamed, not loaded into memory
+- **Segment Cleanup**: Old HLS segments deleted after serving
+- **Torrent Pieces**: Only download what's needed
+
+### Caching
+
+- **Metadata Probe**: Results cached in session
+- **Cooldown**: Prevents repeated probing
+- **Torrent Status**: Cached and updated periodically
+
+## Deployment
+
+### Bundled with Desktop
+
+The server is compiled as a standalone binary and bundled with the desktop app:
+
+**Build Script** (raffi-desktop/build_binary.cjs):
+```javascript
+// Builds Go binary for current platform
+const platform = process.platform;
+const arch = process.arch;
+
+// Output: electron/decoder-{platform}-{arch}
+```
+
+**Platform Binaries**:
+- `decoder-x86_64-unknown-linux-gnu`
+- `decoder-aarch64-apple-darwin`
+- `decoder-x86_64-apple-darwin`
+- `decoder-windows-amd64.exe`
+
+### Standalone Deployment
+
+Can run independently for mobile clients:
+
+```bash
+# Build
+cd raffi-server
+go build -o decoder .
+
+# Run
+export RAFFI_SERVER_ADDR=0.0.0.0:6969
+./decoder
+```
+
+**Environment Variables**:
+- `RAFFI_SERVER_ADDR`: Listen address (default: `127.0.0.1:6969`)
+- `RAFFI_CAST_HOST`: Override cast host for NAT scenarios
+
+## Error Handling
+
+### Graceful Degradation
+
+- **Metadata Probe Failure**: Return session without metadata
+- **FFmpeg Crash**: Log error, allow retry
+- **Torrent Timeout**: Progressive timeout with status reporting
+
+### Logging
+
+Structured logging throughout:
+```go
+log.Printf("Seeking session %s to %.2f seconds", id, time)
+log.Printf("metadata probe failed: %v", err)
+```
+
+## Key Design Decisions
+
+### Why Go?
+- **Performance**: Compiled language, fast startup
+- **Concurrency**: Goroutines for parallel transcoding
+- **Single Binary**: No runtime dependencies
+- **Cross-compilation**: Easy multi-platform builds
+
+### Why HLS Over Direct Streaming?
+- **Seeking**: Restart transcoding from any position
+- **Quality Control**: Consistent output quality
+- **Compatibility**: Universal client support
+- **Bandwidth**: Adaptive streaming possible
+
+### Why FFmpeg?
+- **Format Support**: Handles any video format
+- **Quality**: Industry-standard transcoding
+- **Subtitle Burning**: Can embed subtitles
+- **Audio Selection**: Easy track switching
+
+### Why In-Memory Sessions?
+- **Simplicity**: No database required
+- **Performance**: Fast lookups
+- **Temporary**: Sessions are transient
+- **Restart Safe**: No stale state on crash
+
+## Monitoring
+
+### Health Checks
+
+Desktop app performs health checks:
+```
+GET http://127.0.0.1:6969/
+Expected: Any response = server running
+```
+
+### Metrics
+
+Current implementation logs:
+- Session creation/cleanup
+- Seek operations
+- Torrent download progress
+- FFmpeg errors
+
+## Related Documentation
+
+- [Desktop App Architecture](/architecture/desktop-app)
+- [Mobile App Architecture](/architecture/mobile-app)
+- [Backend Architecture](/architecture/backend)

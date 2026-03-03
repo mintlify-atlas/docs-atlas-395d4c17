@@ -1,0 +1,293 @@
+---
+title: 'Watch Parties'
+description: 'Watch content together with friends using synchronized playback, real-time chat, and host controls'
+---
+
+Watch Parties allow you to watch movies and TV shows together with friends in perfect sync, no matter where you are.
+
+## Overview
+
+Watch Parties provide real-time synchronized playback across multiple devices. One person hosts the party, and participants join to watch together with synchronized play, pause, and seek controls.
+
+<Info>
+All participants must be signed in with a Raffi account to create or join watch parties.
+</Info>
+
+## Creating a Watch Party
+
+Start watching together by creating a watch party:
+
+<Steps>
+  <Step title="Start Playing Content">
+    Begin playing any movie or TV episode in Raffi.
+  </Step>
+  
+  <Step title="Open Watch Party Modal">
+    Click the Watch Party button in the player controls.
+  </Step>
+  
+  <Step title="Create Party">
+    Click "Create Watch Party" to generate a unique party ID.
+  </Step>
+  
+  <Step title="Share Party ID">
+    Copy the party ID and share it with friends you want to invite.
+  </Step>
+</Steps>
+
+You're now the host of the watch party! Your playback controls will control the stream for all participants.
+
+## Joining a Watch Party
+
+Join a friend's watch party:
+
+<Steps>
+  <Step title="Get the Party ID">
+    Ask the host for the unique watch party ID.
+  </Step>
+  
+  <Step title="Open Watch Party Modal">
+    Click the Watch Party button in any player or from the main interface.
+  </Step>
+  
+  <Step title="Enter Party ID">
+    Paste the party ID and click "Join Watch Party".
+  </Step>
+  
+  <Step title="Start Watching">
+    The player will load the same content and sync to the host's playback position.
+  </Step>
+</Steps>
+
+<Note>
+All participants should use the same stream source for the best experience, though this is not strictly required.
+</Note>
+
+## Host Controls
+
+As the watch party host, you have full control over playback:
+
+### Available Controls
+
+- **Play/Pause** - Controls playback for all participants
+- **Seek** - Jump to any timestamp, all viewers follow
+- **Audio Track Selection** - Change audio tracks (applies to host only)
+- **Subtitle Selection** - Change subtitles (applies to host only)
+
+<Tip>
+Each participant can independently adjust their volume, subtitle delay, and display settings without affecting others.
+</Tip>
+
+### Host Responsibilities
+
+- The party continues as long as the host remains connected
+- If the host leaves, the party ends for all participants
+- Host controls are indicated in the player interface
+
+## Participant Experience
+
+### Synchronized Playback
+
+When you join as a participant:
+
+- Playback automatically syncs to the host's current position
+- Play/pause state matches the host in real-time
+- Seek controls are disabled (only the host can seek)
+
+<Info>
+Synchronization occurs every 3 seconds, with automatic correction if drift exceeds 2 seconds.
+</Info>
+
+### Limited Controls
+
+Participants have access to:
+
+- **Volume control** - Adjust your local volume
+- **Subtitle selection** - Choose your preferred subtitles
+- **Subtitle delay** - Adjust subtitle timing for your playback
+- **Audio track selection** - Select your preferred audio track
+- **Display settings** - Toggle fullscreen, object fit, etc.
+
+Participants cannot:
+
+- Play or pause the video
+- Seek to different timestamps
+- Control the host's playback
+
+## Real-Time Synchronization
+
+### How It Works
+
+Watch parties use Supabase real-time database for synchronization:
+
+1. **Host broadcasts state** - Playback time and play/pause status
+2. **Participants poll updates** - Check for changes every 3 seconds
+3. **Auto-correction** - If time drift exceeds 2 seconds, participants automatically seek
+4. **Heartbeat system** - All members send presence updates every 10 seconds
+
+### Sync Tolerance
+
+The system maintains tight synchronization:
+
+- **2-second tolerance** - Drift beyond 2 seconds triggers auto-correction
+- **Instant play/pause** - State changes apply immediately
+- **Buffering handling** - System accounts for different buffer states
+
+<Note>
+Network conditions affect sync quality. All participants should have stable internet connections for the best experience.
+</Note>
+
+## Member Management
+
+### Viewing Members
+
+The watch party interface shows:
+
+- Total number of connected members
+- Your role (Host or Participant)
+- Connection status
+
+### Presence Tracking
+
+The system tracks member presence:
+
+- **Active members** - Updated within the last 10 seconds
+- **Inactive members** - No heartbeat for more than 10 seconds
+- **Automatic cleanup** - Inactive members are removed from the count
+
+## Ending a Watch Party
+
+### As the Host
+
+<Steps>
+  <Step title="Open Watch Party Modal">
+    Click the Watch Party button in the player.
+  </Step>
+  
+  <Step title="Leave Party">
+    Click "Leave Watch Party" to end the session.
+  </Step>
+  
+  <Step title="All Participants Disconnected">
+    All participants receive a notification that the host has left.
+  </Step>
+</Steps>
+
+### As a Participant
+
+<Steps>
+  <Step title="Open Watch Party Modal">
+    Click the Watch Party button in the player.
+  </Step>
+  
+  <Step title="Leave Party">
+    Click "Leave Watch Party" to exit.
+  </Step>
+  
+  <Step title="Continue Solo">
+    You can continue watching independently or close the player.
+  </Step>
+</Steps>
+
+### Automatic Disconnection
+
+You're automatically removed from a watch party when:
+
+- You close the player window
+- You navigate away from the player
+- Your internet connection drops for more than 30 seconds
+- You close the Raffi application
+
+## Party End Notifications
+
+When a watch party ends, you'll receive a notification explaining why:
+
+- **Host left** - The party creator left the session
+- **Party deleted** - The party was manually deleted or expired
+
+<Tip>
+You can immediately create a new watch party to continue watching together.
+</Tip>
+
+## Technical Details
+
+### Database Synchronization
+
+Watch parties use Supabase for real-time state management:
+
+```
+Party State:
+- party_id (unique identifier)
+- host_user_id (creator)
+- imdb_id (content being watched)
+- season/episode (for TV shows)
+- current_time_seconds (playback position)
+- is_playing (play/pause state)
+- stream_source (selected stream)
+- created_at (timestamp)
+```
+
+### Update Frequency
+
+- **Heartbeat**: Every 10 seconds
+- **State polling**: Every 3 seconds
+- **Sync threshold**: 2 seconds of drift
+
+### Session Lifecycle
+
+1. **Creation** - Host creates party with current content
+2. **Joining** - Participants join using party ID
+3. **Active sync** - Continuous state synchronization
+4. **Cleanup** - Automatic cleanup when host leaves or party expires
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Stable Connection" icon="wifi">
+    Ensure all participants have reliable internet for smooth synchronization.
+  </Card>
+  
+  <Card title="Same Stream Source" icon="tower-broadcast">
+    Use the same addon and quality for consistent experience across all viewers.
+  </Card>
+  
+  <Card title="Host Communication" icon="comments">
+    The host should communicate before making major changes like seeking.
+  </Card>
+  
+  <Card title="Audio Settings" icon="volume">
+    Each participant can adjust their own audio and subtitle preferences.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+### Out of Sync
+
+If your playback becomes out of sync:
+
+1. Wait 3-5 seconds for automatic correction
+2. If still out of sync, leave and rejoin the party
+3. Check your internet connection stability
+
+### Cannot Join Party
+
+If you can't join a watch party:
+
+- Verify you're signed in to your Raffi account
+- Double-check the party ID for typos
+- Ensure the host hasn't left the party
+- Confirm you have the same content available in your addons
+
+### Playback Stuttering
+
+If you experience stuttering during watch parties:
+
+- Select a lower quality stream
+- Close other bandwidth-intensive applications
+- Check your network connection
+- Try a different stream source
+
+<Info>
+Watch party synchronization is separate from video buffering. Playback issues are typically related to stream quality or network conditions, not the sync system.
+</Info>

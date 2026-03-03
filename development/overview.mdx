@@ -1,0 +1,148 @@
+---
+title: Development Overview
+description: Get started with Raffi development and understand the architecture
+---
+
+Raffi is a modern, cross-platform streaming application built with modern web technologies. It provides a Netflix-like experience while leveraging the Stremio addon ecosystem for content discovery and streaming.
+
+## What is Raffi?
+
+Raffi is inspired by [Stremio](https://www.stremio.com/) and designed to be a faster, more beautiful alternative with enhanced features. Like Stremio, Raffi uses community addons to aggregate streaming sources, but goes beyond with:
+
+- Reimagined interface with smooth animations
+- Improved performance
+- Synchronized watch parties
+- Enhanced progress tracking
+- Discord Rich Presence integration
+- Cross-platform support (Windows, macOS, Linux, iOS, Android)
+
+## Architecture
+
+Raffi is a monorepo containing five main projects:
+
+### Desktop App (`raffi-desktop/`)
+
+- **Framework**: Electron 40 with Svelte 5 and TypeScript
+- **Platforms**: Windows, macOS, Linux
+- **Features**: Full desktop experience with watch parties, Discord integration, local file playback
+- **Build Tool**: electron-builder for multi-platform releases
+- **Video Player**: HLS.js for adaptive streaming
+- **Key Dependencies**:
+  - `@supabase/supabase-js` - Database and authentication
+  - `convex` - Real-time data synchronization
+  - `hls.js` - Video playback
+  - `@ryuziii/discord-rpc` - Discord integration
+  - `lucide-svelte` - Icons
+
+### Mobile App (`raffi-mobile/`)
+
+- **Framework**: React Native with Expo SDK 54
+- **Platforms**: iOS and Android
+- **Features**: Browse content, search, continue watching, native video playback
+- **Architecture**: Expo Router for file-based routing, new architecture enabled
+- **State Management**: Zustand
+- **Sync**: Shares authentication and watch progress with desktop via Supabase
+- **Native Module**: Custom torrent-streamer module for on-device streaming
+- **Video Player**: Expo Video (native)
+
+### Streaming Server (`raffi-server/`)
+
+- **Language**: Go 1.25+
+- **Purpose**: HLS transcoding server for video streams
+- **Features**: Torrent/magnet link streaming, Chromecast support, community addon integration
+- **Deployment**: Compiled binaries bundled with desktop app, can run standalone for mobile
+- **Key Files**:
+  - `main.go` - Main server logic
+  - `cast.go` - Chromecast functionality
+  - `clip.go` - Video clipping
+  - `community_addons.go` - Addon integration
+
+### Marketing Website (`raffi-site/`)
+
+- **Framework**: SvelteKit
+- **Purpose**: Marketing site and download page
+- **Hosted at**: [raffi.al](https://raffi.al)
+- **Build Tool**: Vite
+
+### Backend Functions (`convex/`)
+
+- **Platform**: Convex
+- **Purpose**: Real-time backend functions for watch parties, presence, and synchronization
+- **Key Files**:
+  - `raffi.ts` - Main Convex functions
+  - `auth.config.ts` - Authentication configuration
+  - `schema.ts` - Database schema
+
+## Tech Stack Summary
+
+### Frontend Technologies
+
+- **Desktop**: Svelte 5, TypeScript, Tailwind CSS 4
+- **Mobile**: React 19, TypeScript, React Native 0.81
+- **Website**: SvelteKit, TypeScript
+
+### Backend Technologies
+
+- **Streaming Server**: Go 1.25+
+- **Database**: Supabase (PostgreSQL)
+- **Real-time Backend**: Convex
+- **Authentication**: Supabase Auth
+
+### Development Tools
+
+- **Package Managers**: Bun 1.0+ (desktop), npm (mobile/site)
+- **Build Tools**: Vite, electron-builder, Expo
+- **Version Control**: Git
+
+## Key Features
+
+### Stremio Addon Compatibility
+
+- Full support for Stremio addon protocol
+- Community addon ecosystem for movies and TV shows
+- Multiple addon sources simultaneously
+- Easy addon management and configuration
+
+### Video Playback
+
+- Custom video player with HLS support
+- Multiple quality selection
+- Subtitle parsing (SRT/VTT)
+- Audio track switching
+- Picture-in-picture and fullscreen support
+
+### Watch Parties
+
+- Real-time synchronization via Convex
+- WebSocket-based state management
+- Host/participant role system
+- Chat and presence indicators
+- Automatic reconnection
+
+### Cross-Device Synchronization
+
+- Shared authentication via Supabase across desktop and mobile
+- Watch progress sync - start on desktop, continue on mobile
+- Library sync - custom lists and favorites across devices
+- Addon settings available on all platforms
+
+## Development Philosophy
+
+Raffi prioritizes:
+
+1. **Performance** - Fast, responsive UI with smooth animations
+2. **User Experience** - Beautiful, intuitive interface
+3. **Cross-Platform** - Consistent experience across all platforms
+4. **Open Ecosystem** - Full compatibility with Stremio addons
+5. **Modern Stack** - Latest web technologies and best practices
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Setup Guide" icon="wrench" href="/development/setup">
+    Set up your development environment and run Raffi locally
+  </Card>
+  <Card title="Project Structure" icon="folder-tree" href="/development/project-structure">
+    Explore the codebase organization and key directories
+  </Card>
+</CardGroup>

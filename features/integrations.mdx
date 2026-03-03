@@ -1,0 +1,347 @@
+---
+title: 'Integrations'
+description: 'Connect Raffi with Discord Rich Presence and Chromecast for enhanced viewing experiences'
+---
+
+Raffi integrates with popular platforms to enhance your viewing experience and share what you're watching.
+
+## Discord Rich Presence
+
+Show your friends what you're watching with Discord Rich Presence integration.
+
+### What is Discord Rich Presence?
+
+Discord Rich Presence displays your current activity in Discord:
+
+- **What you're watching** - Movie or TV show title
+- **Episode information** - Season and episode number for TV shows
+- **Playback status** - Playing or paused indicator
+- **Time remaining** - Dynamic countdown to end of content
+- **Raffi branding** - Shows you're using Raffi
+
+<Info>
+Discord Rich Presence only works with the desktop app and requires Discord to be running.
+</Info>
+
+### Enabling Discord Integration
+
+Discord Rich Presence is automatic:
+
+1. **Launch Discord** - Ensure Discord is running on your computer
+2. **Start Raffi** - Open the Raffi desktop app
+3. **Play Content** - Begin watching any movie or TV show
+4. **Automatic Display** - Your activity appears in Discord within seconds
+
+<Note>
+No configuration required - Discord integration works automatically when both apps are running.
+</Note>
+
+### What's Displayed
+
+Your Discord status shows:
+
+**For Movies:**
+- Title: Movie name
+- State: "Movie"
+- Time remaining: Countdown to end
+- Status icon: Play or pause indicator
+
+**For TV Shows:**
+- Title: Show name
+- State: "S{season} E{episode} - {episode_name}"
+- Time remaining: Countdown to episode end
+- Status icon: Play or pause indicator
+
+### Example Display
+
+```
+Watching Raffi
+Breaking Bad
+S5 E16 - Felina
+⏱️ 32 minutes remaining
+▶️ Playing
+```
+
+### Privacy Controls
+
+Control what Discord shows:
+
+- **Activity Status** - Toggle in Discord settings > Activity Status
+- **Close Raffi** - Activity clears when you close the player
+- **Pause** - Status updates to "Paused" when you pause playback
+
+<Tip>
+If you don't want to show what you're watching, disable Activity Status in Discord settings before launching Raffi.
+</Tip>
+
+### Automatic Updates
+
+Rich Presence updates automatically:
+
+- **Title changes** - Updates when switching content
+- **Play/pause** - Status icon changes instantly
+- **Time remaining** - Countdown updates continuously
+- **Episode progression** - Updates when next episode starts
+
+### Clearing Activity
+
+Your Discord activity clears when:
+
+- You close the Raffi player
+- You exit the Raffi application
+- You stop playing content
+- Discord loses connection to Raffi
+
+## Chromecast Support
+
+Cast your content to any Chromecast device on your network.
+
+### What is Chromecast?
+
+Chromecast allows you to:
+
+- **Stream to TV** - Play content on your television
+- **Remote control** - Control playback from Raffi
+- **Better quality** - Often provides better playback performance
+- **Free your computer** - Keep using your computer while watching
+
+<Info>
+Chromecast support is available in the desktop app for both Google Cast devices and compatible smart TVs.
+</Info>
+
+### Supported Devices
+
+Raffi works with:
+
+- **Chromecast** (all generations)
+- **Chromecast Ultra**
+- **Chromecast with Google TV**
+- **Google Cast-enabled TVs**
+- **Android TV devices with Cast support**
+
+### Casting Content
+
+Start casting to your TV:
+
+<Steps>
+  <Step title="Start Playing Content">
+    Begin playing any movie or TV show in Raffi.
+  </Step>
+  
+  <Step title="Open Cast Menu">
+    Click the Cast icon in the player controls.
+  </Step>
+  
+  <Step title="Scan for Devices">
+    Raffi scans your network for available Cast devices (3-second timeout).
+  </Step>
+  
+  <Step title="Select Device">
+    Choose your Chromecast or Cast-enabled TV from the list.
+  </Step>
+  
+  <Step title="Start Casting">
+    Playback transfers to your TV and continues from the current position.
+  </Step>
+</Steps>
+
+### Cast Controls
+
+Control casting from Raffi:
+
+- **Play/Pause** - Control playback on your TV
+- **Seek** - Jump to any position in the video
+- **Volume** - Adjust TV volume
+- **Stop Casting** - Return playback to your computer
+- **Disconnect** - End the cast session
+
+<Note>
+Subtitle and audio track selection must be set before casting. Switching tracks during cast requires reloading the stream.
+</Note>
+
+### Cast Session Management
+
+Raffi maintains your cast session:
+
+- **Persistent connection** - Stays connected until you stop
+- **Automatic reconnect** - Recovers from brief network interruptions
+- **Progress sync** - Your position updates in real-time
+- **Session cleanup** - Automatically cleans up when disconnected
+
+### Stopping a Cast Session
+
+<Steps>
+  <Step title="Open Cast Menu">
+    Click the Cast icon in the player controls.
+  </Step>
+  
+  <Step title="Stop Casting">
+    Click "Stop Casting" or "Disconnect".
+  </Step>
+  
+  <Step title="Return to Local Playback">
+    Optionally resume playback on your computer from the same position.
+  </Step>
+</Steps>
+
+### Cast Modes
+
+Raffi supports two casting modes:
+
+**Native Cast:**
+- Direct streaming to supported devices
+- Best performance and compatibility
+- Lower latency
+
+**Chrome Cast:**
+- Uses Chrome's casting implementation
+- Broader device compatibility
+- Fallback when native mode unavailable
+
+<Info>
+Raffi automatically selects the best mode for your device.
+</Info>
+
+### Cast Metadata
+
+When casting, your TV displays:
+
+- **Title** - Movie or show name
+- **Subtitle** - Episode information for TV shows
+- **Cover art** - Poster image
+- **Background** - Backdrop image
+- **Duration** - Total video length
+
+### Advanced Cast Features
+
+#### Media Reloading
+
+If the cast stream needs updating:
+
+1. Raffi detects duration changes
+2. Automatically reloads media on the device
+3. Maintains playback position
+4. Continues seamlessly
+
+#### Cast Bootstrap
+
+For secure casting:
+
+- **Session tokens** - 15-minute expiration
+- **Local IP detection** - Automatic network configuration
+- **Secure URLs** - Token-protected stream access
+
+### Network Requirements
+
+For reliable casting:
+
+- **Same network** - Raffi and Cast device must be on the same WiFi
+- **Stable connection** - Strong WiFi signal recommended
+- **Firewall rules** - Allow Cast protocol (UDP 5353, TCP 8008-8009)
+- **Router compatibility** - UPnP/mDNS support recommended
+
+<Tip>
+If devices don't appear, check that your router allows device-to-device communication (disable AP isolation).
+</Tip>
+
+## Other Integrations
+
+### Trakt
+
+Sync your watch history with Trakt:
+
+- **Automatic scrobbling** - Progress sent to Trakt
+- **Watch history** - Keep track across all platforms
+- **Recommendations** - Get suggestions based on viewing
+- **Statistics** - View your watching stats
+
+#### Setting Up Trakt
+
+<Steps>
+  <Step title="Open Settings">
+    Navigate to Raffi settings.
+  </Step>
+  
+  <Step title="Connect Trakt">
+    Click "Connect Trakt" in the integrations section.
+  </Step>
+  
+  <Step title="Authorize">
+    Sign in to Trakt and authorize Raffi.
+  </Step>
+  
+  <Step title="Start Watching">
+    Your progress automatically syncs to Trakt.
+  </Step>
+</Steps>
+
+### AVE Authentication
+
+Connect with AVE services:
+
+- **Account integration** - Link your AVE account
+- **Premium features** - Access AVE-specific features
+- **Sync settings** - Share configuration across platforms
+
+## Troubleshooting Integrations
+
+### Discord Not Showing Activity
+
+If Discord Rich Presence doesn't appear:
+
+1. Ensure Discord is running before starting Raffi
+2. Check Discord settings > Activity Status is enabled
+3. Restart both Discord and Raffi
+4. Verify you're playing content (not just browsing)
+
+### Chromecast Device Not Found
+
+If your Cast device doesn't appear:
+
+1. Verify device is powered on and connected to WiFi
+2. Ensure Raffi and device are on the same network
+3. Check router allows device discovery (disable AP isolation)
+4. Restart your Cast device
+5. Try scanning again with longer timeout
+
+### Cast Playback Issues
+
+If casting doesn't work properly:
+
+- **Stuttering** - Select a lower quality stream
+- **No audio** - Check TV volume and audio output settings
+- **Buffering** - Verify network connection strength
+- **Disconnects** - Check WiFi stability
+
+### Trakt Not Syncing
+
+If Trakt sync fails:
+
+1. Check internet connection
+2. Reauthorize Trakt in settings
+3. Verify content has valid IMDb or TMDB ID
+4. Check Trakt service status
+
+<Info>
+Most integration issues resolve with a restart of both Raffi and the connected service.
+</Info>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Network Stability" icon="wifi">
+    Use wired Ethernet for computer when casting for best performance.
+  </Card>
+  
+  <Card title="Privacy Awareness" icon="shield">
+    Remember Discord shows your activity to friends - use privacy settings if needed.
+  </Card>
+  
+  <Card title="Quality Settings" icon="gauge">
+    Select appropriate quality for your TV and network when casting.
+  </Card>
+  
+  <Card title="Keep Updated" icon="download">
+    Update Raffi, Discord, and Chromecast firmware for best compatibility.
+  </Card>
+</CardGroup>

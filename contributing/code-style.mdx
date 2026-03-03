@@ -1,0 +1,546 @@
+---
+title: Code Style Guidelines
+description: TypeScript, linting, and code formatting standards for Raffi
+---
+
+## Code Style Overview
+
+Raffi maintains consistent code style across all projects to ensure readability and maintainability. All projects use TypeScript with strict type checking enabled.
+
+## TypeScript Standards
+
+### Desktop App (Svelte)
+
+The desktop app uses TypeScript with Svelte 5 and follows these configuration standards:
+
+```json
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "allowJs": true,
+    "checkJs": true,
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "composite": true
+  }
+}
+```
+
+**Key TypeScript features:**
+- **Target**: ES2022 for modern JavaScript features
+- **Module**: ESNext with bundler resolution
+- **JavaScript checking**: Enabled with `checkJs: true`
+- **Strict mode**: Inherited from Svelte base config
+
+### Mobile App (React Native)
+
+The mobile app uses TypeScript with Expo and React Native:
+
+```json
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+**Key TypeScript features:**
+- **Strict mode**: Enabled for maximum type safety
+- **Path aliases**: Use `@/*` for cleaner imports
+- **Expo base**: Inherits Expo-specific configurations
+
+<Note>
+Always enable strict mode when creating new TypeScript files. This catches potential bugs early and improves code quality.
+</Note>
+
+## Type Safety Best Practices
+
+### Use Explicit Types
+
+Avoid implicit `any` types. Always define explicit types for function parameters and return values:
+
+```typescript
+// Good
+function fetchMedia(id: string): Promise<MediaItem> {
+  return api.get(`/media/${id}`);
+}
+
+// Avoid
+function fetchMedia(id) {
+  return api.get(`/media/${id}`);
+}
+```
+
+### Define Interfaces for Complex Objects
+
+Create interfaces for data structures used throughout the application:
+
+```typescript
+interface MediaItem {
+  id: string;
+  title: string;
+  type: 'movie' | 'series';
+  year: number;
+  poster?: string;
+}
+
+interface StreamSource {
+  url: string;
+  quality: '720p' | '1080p' | '4K';
+  format: 'hls' | 'mp4';
+}
+```
+
+### Use Type Guards
+
+Implement type guards for runtime type checking:
+
+```typescript
+function isMovie(media: MediaItem): media is Movie {
+  return media.type === 'movie';
+}
+
+function isSeries(media: MediaItem): media is Series {
+  return media.type === 'series';
+}
+```
+
+### Leverage Union Types
+
+Use union types for values that can be one of several types:
+
+```typescript
+type PlaybackState = 'playing' | 'paused' | 'buffering' | 'stopped';
+type Quality = '720p' | '1080p' | '4K' | 'auto';
+```
+
+<Tip>
+Union types are perfect for state management and configuration options. They provide autocomplete and prevent invalid values.
+</Tip>
+
+## Linting Configuration
+
+### Desktop and Website (Svelte)
+
+The desktop and website projects use `svelte-check` for type checking:
+
+```bash
+# Run type checking
+npm run check
+```
+
+The check script runs:
+- Svelte component type checking
+- TypeScript compilation checks
+- Template syntax validation
+
+### Mobile (React Native/Expo)
+
+The mobile app uses ESLint with Expo configuration:
+
+```javascript
+// eslint.config.js
+const { defineConfig } = require('eslint/config');
+const expoConfig = require('eslint-config-expo/flat');
+
+module.exports = defineConfig([
+  expoConfig,
+  {
+    ignores: ['dist/*'],
+  },
+]);
+```
+
+**Run linting:**
+```bash
+npm run lint
+```
+
+<Note>
+Always run linting before committing code. Fix all linting errors and address warnings when possible.
+</Note>
+
+## Code Formatting
+
+### Indentation and Spacing
+
+- **Indentation**: Use 2 spaces (not tabs)
+- **Line length**: Aim for 80-100 characters per line
+- **Spacing**: Add spaces around operators and after commas
+
+```typescript
+// Good
+const result = a + b;
+const items = [1, 2, 3, 4];
+
+// Avoid
+const result=a+b;
+const items=[1,2,3,4];
+```
+
+### Naming Conventions
+
+- **Variables and functions**: camelCase
+- **Components**: PascalCase
+- **Constants**: UPPER_SNAKE_CASE
+- **Interfaces/Types**: PascalCase
+- **Private members**: prefix with underscore `_privateMethod`
+
+```typescript
+// Variables and functions
+const videoPlayer = new VideoPlayer();
+function playVideo() { /* ... */ }
+
+// Components
+function VideoPlayer() { /* ... */ }
+class MediaController { /* ... */ }
+
+// Constants
+const MAX_QUALITY = '4K';
+const DEFAULT_VOLUME = 0.7;
+
+// Interfaces
+interface VideoPlayerProps {
+  src: string;
+  autoplay: boolean;
+}
+```
+
+### Import Organization
+
+Organize imports in the following order:
+1. External libraries
+2. Internal modules
+3. Components
+4. Types/Interfaces
+5. Styles
+
+```typescript
+// External libraries
+import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+// Internal modules
+import { api } from '@/lib/api';
+import { formatTime } from '@/lib/utils';
+
+// Components
+import VideoPlayer from '@/components/VideoPlayer';
+import ControlBar from '@/components/ControlBar';
+
+// Types
+import type { MediaItem, StreamSource } from '@/types';
+```
+
+<Tip>
+Group related imports together and separate groups with blank lines for better readability.
+</Tip>
+
+## Svelte-Specific Guidelines
+
+### Component Structure
+
+Organize Svelte components in this order:
+1. Script tag with TypeScript
+2. Template markup
+3. Style tag (if needed)
+
+```svelte
+<script lang="ts">
+  import { onMount } from 'svelte';
+  
+  interface Props {
+    title: string;
+    items: string[];
+  }
+  
+  let { title, items }: Props = $props();
+  let selectedIndex = $state(0);
+  
+  onMount(() => {
+    // Initialization code
+  });
+</script>
+
+<div class="container">
+  <h1>{title}</h1>
+  {#each items as item, i}
+    <button onclick={() => selectedIndex = i}>
+      {item}
+    </button>
+  {/each}
+</div>
+
+<style>
+  .container {
+    padding: 1rem;
+  }
+</style>
+```
+
+### Svelte 5 Runes
+
+Use Svelte 5 runes for reactive state:
+
+- `$state()` for reactive variables
+- `$derived()` for computed values
+- `$effect()` for side effects
+- `$props()` for component props
+
+```typescript
+let count = $state(0);
+let doubled = $derived(count * 2);
+
+$effect(() => {
+  console.log(`Count is now ${count}`);
+});
+```
+
+## React Native Guidelines
+
+### Component Organization
+
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+interface VideoCardProps {
+  title: string;
+  thumbnail: string;
+  onPress: () => void;
+}
+
+export function VideoCard({ title, thumbnail, onPress }: VideoCardProps) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});
+```
+
+### Hooks Best Practices
+
+- Always define hooks at the top level
+- Use `useCallback` for event handlers
+- Use `useMemo` for expensive computations
+- Extract complex hooks to custom hooks
+
+```typescript
+import { useState, useCallback, useMemo } from 'react';
+
+function VideoList({ videos }: { videos: Video[] }) {
+  const [filter, setFilter] = useState('');
+  
+  const filteredVideos = useMemo(
+    () => videos.filter(v => v.title.includes(filter)),
+    [videos, filter]
+  );
+  
+  const handlePress = useCallback((video: Video) => {
+    // Handle press
+  }, []);
+  
+  return (/* ... */);
+}
+```
+
+## Go Server Guidelines
+
+### Code Organization
+
+- Use Go modules for dependency management
+- Follow standard Go project structure
+- Use `gofmt` for formatting
+- Write idiomatic Go code
+
+### Error Handling
+
+```go
+func processStream(url string) error {
+    stream, err := fetchStream(url)
+    if err != nil {
+        return fmt.Errorf("failed to fetch stream: %w", err)
+    }
+    
+    return nil
+}
+```
+
+## Comments and Documentation
+
+### When to Comment
+
+- Explain complex algorithms or business logic
+- Document public APIs and interfaces
+- Clarify non-obvious implementation decisions
+- Add TODO comments for future improvements
+
+```typescript
+/**
+ * Fetches media metadata from the Stremio addon ecosystem.
+ * 
+ * @param id - The media ID (IMDB format preferred)
+ * @param type - Media type ('movie' or 'series')
+ * @returns Promise resolving to media metadata
+ */
+async function fetchMetadata(id: string, type: MediaType): Promise<Metadata> {
+  // Use cached data if available and not stale
+  const cached = cache.get(id);
+  if (cached && !isCacheStale(cached)) {
+    return cached.data;
+  }
+  
+  // Fetch from all configured addons in parallel
+  const results = await Promise.all(
+    addons.map(addon => addon.getMeta(type, id))
+  );
+  
+  // TODO: Implement addon priority scoring
+  return mergeMeta(results);
+}
+```
+
+### Avoid Obvious Comments
+
+```typescript
+// Bad - comment states the obvious
+const count = 0; // Initialize count to 0
+
+// Good - no comment needed, code is self-explanatory
+const videoCount = videos.length;
+```
+
+## Git Workflow
+
+### Branch Naming
+
+- `feature/description` - New features
+- `fix/description` - Bug fixes
+- `refactor/description` - Code refactoring
+- `docs/description` - Documentation changes
+
+### Commit Messages
+
+Follow conventional commit format:
+
+```
+<type>: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `refactor`: Code refactoring
+- `test`: Adding tests
+- `chore`: Maintenance tasks
+- `perf`: Performance improvements
+
+**Examples:**
+```bash
+git commit -m "feat: add Discord Rich Presence integration"
+git commit -m "fix: resolve playback stuttering on Linux"
+git commit -m "docs: update installation instructions for macOS"
+```
+
+<Note>
+Keep commit messages concise (under 72 characters) and use the imperative mood ("add feature" not "added feature").
+</Note>
+
+## Testing Requirements
+
+While Raffi currently doesn't have extensive automated tests, follow these guidelines when adding tests:
+
+### Manual Testing Checklist
+
+Before submitting a PR, test:
+
+1. **Functionality**: Does the feature work as expected?
+2. **Edge cases**: What happens with invalid input?
+3. **Performance**: Does it introduce lag or memory leaks?
+4. **Platform compatibility**: Does it work on all target platforms?
+5. **Error handling**: Are errors handled gracefully?
+
+### Future Testing Framework
+
+When adding automated tests:
+- Use Vitest for unit tests (desktop/website)
+- Use React Native Testing Library (mobile)
+- Focus on critical functionality first
+- Aim for meaningful tests over coverage numbers
+
+<Tip>
+When fixing bugs, try to reproduce the issue reliably before implementing a fix. This helps verify the fix works and prevents regressions.
+</Tip>
+
+## Build and Distribution
+
+### Desktop App Builds
+
+```bash
+cd raffi-desktop
+
+# Build for specific platform
+bun run dist -- --win    # Windows
+bun run dist -- --linux  # Linux
+bun run dist -- --mac    # macOS
+
+# Build for all platforms
+bun run dist
+```
+
+Output: `raffi-desktop/release/`
+
+### Mobile App Builds
+
+```bash
+cd raffi-mobile
+
+# Development builds
+npx expo run:ios
+npx expo run:android
+
+# Production builds (requires EAS)
+eas build --platform ios
+eas build --platform android
+```
+
+## Code Review Checklist
+
+Before requesting review, ensure:
+
+- [ ] Code follows TypeScript and style guidelines
+- [ ] All linting errors are resolved
+- [ ] Type checking passes (`npm run check`)
+- [ ] Changes are tested on relevant platforms
+- [ ] Documentation is updated
+- [ ] Commit messages are clear and descriptive
+- [ ] No debug code or console logs remain
+- [ ] Dependencies are properly declared
+- [ ] Git history is clean and logical
+
+<Note>
+A thorough self-review before requesting feedback saves time and helps maintain code quality.
+</Note>

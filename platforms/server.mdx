@@ -1,0 +1,623 @@
+---
+title: Streaming Server
+description: Go-based HLS transcoding and torrent streaming server bundled with Raffi desktop
+---
+
+The Raffi streaming server is a high-performance Go application that provides HLS transcoding, torrent handling, and video streaming capabilities. It's automatically bundled with the desktop app and can be used as a standalone server for mobile devices.
+
+## Overview
+
+The server handles the heavy lifting for video streaming:
+- **Torrent Streaming**: Direct magnet/torrent link streaming with piece prioritization
+- **HLS Transcoding**: Adaptive bitrate streaming with multiple quality levels
+- **Session Management**: Multi-user streaming sessions with cleanup
+- **Chromecast Support**: Cast token generation and stream routing
+- **Local File Playback**: Serve local media files with range request support
+
+### Tech Stack
+
+- **Language**: Go 1.25+
+- **Torrent Engine**: anacrolix/torrent 1.59.1 (libtorrent-based)
+- **Database**: SQLite (zombiezen.com/go/sqlite 0.13.1)
+- **WebRTC**: pion/webrtc v4.0.0 for peer connections
+- **HTTP Server**: Standard library net/http
+- **Concurrency**: Goroutines with context-based cancellation
+
+## Architecture
+
+### Server Structure
+
+```go
+type Server struct {
+    sessions        session.Store           // Session management
+    torrentStreamer *stream.TorrentStreamer // Torrent handling
+    hlsController   *hls.Controller         // HLS transcoding
+    probeMu         sync.Mutex              // Media probe locking
+    probeCooldown   map[string]time.Time    // Probe rate limiting
+    castMu          sync.RWMutex            // Cast token locking
+    castTokens      map[string]CastToken    // Chromecast tokens
+}
+```
+
+### Key Components
+
+**Torrent Streamer** (`src/stream`)
+- Manages torrent downloads with streaming optimization
+- Piece prioritization for sequential playback
+- DHT and tracker support
+- Temporary file management in system temp directory
+
+**HLS Controller** (`src/stream/hls`)
+- Transcodes video streams to HLS format
+- Multiple quality profiles (1080p, 720p, 480p, 360p)
+- Segment-based streaming with M3U8 playlists
+- Orphaned session cleanup every 30 seconds
+
+**Session Store** (`src/session`)
+- In-memory session tracking
+- Concurrent access with mutex protection
+- Session expiration and cleanup
+
+## HTTP API
+
+The server runs on `127.0.0.1:6969` by default (configurable via `RAFFI_SERVER_ADDR`).
+
+### Endpoints
+
+#### `POST /sessions`
+Create a new streaming session.
+
+**Request Body**:
+```json
+{
+  "type": "torrent",
+  "uri": "magnet:?xt=urn:btih:...",
+  "quality": "1080p"
+}
+```
+
+**Response**:
+```json
+{
+  "id": "abc123",
+  "streamUrl": "http://127.0.0.1:6969/sessions/abc123/stream.m3u8",
+  "status": "ready"
+}
+```
+
+#### `GET /sessions/{id}`
+Get session status and metadata.
+
+**Response**:
+```json
+{
+  "id": "abc123",
+  "status": "streaming",
+  "progress": 75,
+  "peers": 42,
+  "downloadSpeed": "5.2 MB/s",
+  "fileSize": 1073741824
+}
+```
+
+#### `DELETE /sessions/{id}`
+Stop and cleanup a streaming session.
+
+**Response**: `204 No Content`
+
+#### `GET /sessions/{id}/stream.m3u8`
+HLS master playlist.
+
+**Response** (M3U8):
+```m3u8
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080
+http://127.0.0.1:6969/sessions/abc123/1080p/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=1280x720
+http://127.0.0.1:6969/sessions/abc123/720p/playlist.m3u8
+```
+
+#### `GET /torrents/{infohash}`
+Direct torrent file access (for range requests).
+
+**Headers**:
+- `Range: bytes=0-1023` (optional)
+
+**Response**: Video file data with `206 Partial Content`
+
+#### `POST /cast/token`
+Generate a cast token for Chromecast playback.
+
+**Request Body**:
+```json
+{
+  "sessionId": "abc123",
+  "duration": 3600
+}
+```
+
+**Response**:
+```json
+{
+  "token": "xyz789",
+  "expiresAt": "2026-03-03T12:00:00Z"
+}
+```
+
+#### `POST /cleanup`
+Manually trigger orphaned session cleanup.
+
+**Response**: `200 OK`
+
+#### `GET /community-addons`
+List available Stremio community addons.
+
+**Response**:
+```json
+[
+  {
+    "name": "Torrentio",
+    "url": "https://torrentio.strem.fun/manifest.json",
+    "description": "Torrent streaming addon"
+  }
+]
+```
+
+## Bundled with Desktop
+
+The server is compiled as a static binary and bundled with each desktop release:
+
+### Platform-Specific Binaries
+
+<Tabs>
+  <Tab title="Windows">
+    **Binary**: `decoder-windows-amd64.exe`
+    
+    **Build Configuration**:
+    ```bash
+    CGO_ENABLED=1 \
+    CC=gcc \
+    go build \
+      -ldflags="-s -w -extldflags '-static'" \
+      -tags=sqlite_omit_load_extension \
+      -o decoder-windows-amd64.exe
+    ```
+    
+    **Bundled Location**: `raffi-desktop/electron/decoder-windows-amd64.exe`
+    
+    **Features**:
+    - Static linking with MinGW GCC
+    - No external DLL dependencies
+    - SQLite with load extension disabled for security
+    - Stripped symbols for smaller binary size
+    
+    **Size**: ~15-20 MB (compressed in ASAR)
+  </Tab>
+  
+  <Tab title="Linux">
+    **Binary**: `decoder-x86_64-unknown-linux-gnu`
+    
+    **Build Configuration**:
+    ```bash
+    CGO_ENABLED=1 \
+    go build \
+      -ldflags="-s -w -extldflags '-static'" \
+      -tags=sqlite_omit_load_extension \
+      -o decoder-x86_64-unknown-linux-gnu
+    ```
+    
+    **Bundled Location**: `raffi-desktop/electron/decoder-x86_64-unknown-linux-gnu`
+    
+    **Features**:
+    - Static linking with glibc
+    - Portable across most Linux distributions
+    - No external shared library dependencies
+    - Stripped symbols
+    
+    **Size**: ~18-25 MB
+    
+    **Compatibility**: Tested on Ubuntu 20.04+, Debian 11+, Fedora 35+, Arch Linux
+  </Tab>
+  
+  <Tab title="macOS">
+    **Binaries**: 
+    - `decoder-aarch64-apple-darwin` (Apple Silicon)
+    - `decoder-x86_64-apple-darwin` (Intel)
+    
+    **Build Configuration** (Apple Silicon):
+    ```bash
+    CGO_ENABLED=1 \
+    go build \
+      -ldflags="-s -w" \
+      -tags=sqlite_omit_load_extension \
+      -o decoder-aarch64-apple-darwin
+    ```
+    
+    **Build Configuration** (Intel):
+    ```bash
+    CGO_ENABLED=1 \
+    go build \
+      -ldflags="-s -w" \
+      -tags=sqlite_omit_load_extension \
+      -o decoder-x86_64-apple-darwin
+    ```
+    
+    **Bundled Location**: `raffi-desktop/electron/decoder-*-apple-darwin`
+    
+    **Features**:
+    - Native binaries for both architectures
+    - Automatic selection based on system architecture
+    - No external dependencies (statically linked)
+    - Stripped symbols
+    
+    **Size**: ~16-22 MB each
+    
+    **Note**: macOS builds use dynamic linking for system frameworks (no `-extldflags '-static'`)
+  </Tab>
+</Tabs>
+
+### Automatic Startup
+
+The desktop app automatically manages the server lifecycle:
+
+1. **On App Launch** (electron/services/decoder.cjs):
+   - Detects platform and architecture
+   - Spawns correct binary from `electron/` directory
+   - Sets `RAFFI_SERVER_ADDR=127.0.0.1:6969`
+   - Redirects stdout/stderr to logs
+
+2. **During Runtime**:
+   - Desktop communicates via HTTP (fetch to localhost:6969)
+   - Server handles all torrent/transcoding operations
+   - Background cleanup runs every 30 seconds
+
+3. **On App Close**:
+   - Sends SIGTERM to server process
+   - Server cleanup routine:
+     - Closes all torrent clients
+     - Removes torrent temp directory (`/tmp/raffi-torrents`)
+     - Removes app temp directory (`/tmp/raffi`)
+   - Graceful shutdown with timeout
+
+### Manual Server Launch
+
+For debugging or standalone use:
+
+```bash
+# Navigate to electron directory
+cd raffi-desktop/electron
+
+# Windows
+.\decoder-windows-amd64.exe
+
+# Linux
+./decoder-x86_64-unknown-linux-gnu
+
+# macOS (Intel)
+./decoder-x86_64-apple-darwin
+
+# macOS (Apple Silicon)
+./decoder-aarch64-apple-darwin
+```
+
+Server starts on http://127.0.0.1:6969 and logs to stdout.
+
+## Building from Source
+
+### Prerequisites
+
+- **Go**: 1.25 or later (`go version`)
+- **CGO**: C compiler required
+  - Windows: MinGW, MSYS2, or TDM-GCC
+  - macOS: Xcode Command Line Tools (`xcode-select --install`)
+  - Linux: GCC (`sudo apt install build-essential`)
+
+### Build Script
+
+Use the desktop's build script (cross-platform):
+
+```bash
+cd raffi-desktop
+node build_binary.cjs
+```
+
+This automatically:
+1. Detects your platform (Windows/Linux/macOS)
+2. Sets correct CGO flags and compiler
+3. Builds static binary to `electron/` directory
+4. Applies strip flags to reduce binary size
+
+### Manual Build
+
+```bash
+cd raffi-server
+
+# Simple build (current platform)
+go build -o decoder .
+
+# Production build with optimizations
+go build \
+  -ldflags="-s -w" \
+  -tags=sqlite_omit_load_extension \
+  -o decoder .
+
+# Run server
+./decoder
+```
+
+### Cross-Compilation
+
+**Windows from Linux**:
+```bash
+CGO_ENABLED=1 \
+GOOS=windows \
+GOARCH=amd64 \
+CC=x86_64-w64-mingw32-gcc \
+go build \
+  -ldflags="-s -w -extldflags '-static'" \
+  -tags=sqlite_omit_load_extension \
+  -o decoder-windows-amd64.exe .
+```
+
+**Linux from macOS**:
+```bash
+# Requires Linux cross-compilation toolchain
+CGO_ENABLED=1 \
+GOOS=linux \
+GOARCH=amd64 \
+CC=x86_64-linux-gnu-gcc \
+go build \
+  -ldflags="-s -w -extldflags '-static'" \
+  -tags=sqlite_omit_load_extension \
+  -o decoder-x86_64-unknown-linux-gnu .
+```
+
+## Standalone Server for Mobile
+
+You can run the server standalone to provide transcoding for mobile devices:
+
+### Setup
+
+1. **Build server binary** (see above)
+
+2. **Run on local network**:
+   ```bash
+   # Listen on all interfaces (not just localhost)
+   RAFFI_SERVER_ADDR=0.0.0.0:6969 ./decoder
+   ```
+
+3. **Find your local IP**:
+   ```bash
+   # Windows
+   ipconfig
+   
+   # macOS/Linux
+   ifconfig
+   ip addr show
+   ```
+   
+   Look for `192.168.x.x` or `10.0.x.x` address
+
+4. **Update mobile app**:
+   
+   Edit `raffi-mobile/app/player.tsx`:
+   ```typescript
+   const STREAMING_SERVER = 'http://192.168.1.100:6969';
+   ```
+
+5. **Configure firewall**:
+   ```bash
+   # Linux (ufw)
+   sudo ufw allow 6969/tcp
+   
+   # Linux (firewalld)
+   sudo firewall-cmd --add-port=6969/tcp --permanent
+   sudo firewall-cmd --reload
+   
+   # macOS
+   # System Settings → Network → Firewall → Allow port 6969
+   
+   # Windows
+   # Windows Defender Firewall → Advanced Settings → Inbound Rules
+   # New Rule → Port → TCP 6969 → Allow
+   ```
+
+### Docker Deployment
+
+**Dockerfile**:
+```dockerfile
+FROM golang:1.25-alpine AS builder
+
+RUN apk add --no-cache gcc musl-dev sqlite-dev
+
+WORKDIR /build
+COPY . .
+
+RUN CGO_ENABLED=1 go build \
+    -ldflags="-s -w" \
+    -tags=sqlite_omit_load_extension \
+    -o decoder .
+
+FROM alpine:latest
+
+RUN apk add --no-cache ca-certificates
+
+COPY --from=builder /build/decoder /usr/local/bin/decoder
+
+ENV RAFFI_SERVER_ADDR=0.0.0.0:6969
+
+EXPOSE 6969
+
+CMD ["decoder"]
+```
+
+**Build and Run**:
+```bash
+# Build image
+docker build -t raffi-server .
+
+# Run container
+docker run -d \
+  -p 6969:6969 \
+  -v raffi-torrents:/tmp/raffi-torrents \
+  --name raffi-server \
+  raffi-server
+
+# Check logs
+docker logs -f raffi-server
+```
+
+## Configuration
+
+### Environment Variables
+
+**`RAFFI_SERVER_ADDR`**
+- **Default**: `127.0.0.1:6969`
+- **Format**: `host:port` or `:port`
+- **Example**: `RAFFI_SERVER_ADDR=0.0.0.0:8080`
+
+### Torrent Storage
+
+- **Location**: `os.TempDir() + "/raffi-torrents"`
+  - Windows: `%TEMP%\raffi-torrents`
+  - macOS: `/var/folders/.../raffi-torrents`
+  - Linux: `/tmp/raffi-torrents`
+- **Auto-cleanup**: On server shutdown and session expiration
+- **Disk Usage**: Depends on video file sizes (can be GB)
+
+### Session Cleanup
+
+- **Interval**: Every 30 seconds (background goroutine)
+- **Orphaned Sessions**: Sessions with no active connections
+- **Expired Cast Tokens**: Tokens past expiration time
+
+## Dependencies
+
+Key Go modules from `go.mod`:
+
+### Torrent Engine
+```go
+github.com/anacrolix/torrent v1.59.1
+github.com/anacrolix/dht/v2 v2.23.0
+github.com/anacrolix/go-libutp v1.3.2  // uTP protocol
+```
+
+### Database
+```go
+zombiezen.com/go/sqlite v0.13.1
+modernc.org/sqlite v1.21.1  // Pure Go SQLite
+```
+
+### WebRTC (for peer connections)
+```go
+github.com/pion/webrtc/v4 v4.0.0
+github.com/pion/ice/v4 v4.0.2
+github.com/pion/dtls/v3 v3.0.3
+```
+
+### Networking
+```go
+golang.org/x/net v0.42.0
+golang.org/x/sys v0.34.0
+github.com/gorilla/websocket v1.5.0
+```
+
+### Utilities
+```go
+github.com/google/uuid v1.6.0
+go.etcd.io/bbolt v1.3.6  // Embedded key/value DB
+```
+
+## Performance
+
+### Benchmarks
+
+- **Concurrent Sessions**: 10+ simultaneous streams on modest hardware
+- **Memory Usage**: ~50-200 MB per active torrent (depends on piece cache)
+- **CPU Usage**: Low when streaming, spikes during transcoding
+- **Network**: Saturates gigabit on fast torrents with many peers
+
+### Optimization Tips
+
+1. **SSD Storage**: Use SSD for temp directory to reduce seek times
+2. **Memory Limit**: Monitor RAM usage with many concurrent torrents
+3. **Port Forwarding**: Forward a port for better torrent peer connectivity
+4. **DHT Bootstrap**: Server automatically bootstraps DHT for faster peer discovery
+
+## Troubleshooting
+
+### Server won't start
+
+**Port already in use**:
+```bash
+# Check what's using port 6969
+lsof -i :6969  # macOS/Linux
+netstat -ano | findstr :6969  # Windows
+
+# Kill the process or change port
+RAFFI_SERVER_ADDR=127.0.0.1:7000 ./decoder
+```
+
+**Permission denied**:
+```bash
+# Make binary executable (Linux/macOS)
+chmod +x decoder-x86_64-unknown-linux-gnu
+
+# Run with elevated privileges (not recommended)
+sudo ./decoder
+```
+
+### Torrent not starting
+
+1. **Check DHT**: Server needs time to bootstrap DHT (30-60 seconds)
+2. **Trackers**: Public torrents need working trackers
+3. **Firewall**: Ensure outbound connections allowed
+4. **Logs**: Check server output for errors
+
+### Transcoding issues
+
+- **FFmpeg Required**: Server assumes FFmpeg is available (bundled with desktop)
+- **Codec Support**: Some exotic codecs may not transcode properly
+- **GPU Acceleration**: Not enabled by default (CPU transcoding only)
+
+### High memory usage
+
+```bash
+# Limit Go heap (example: 512MB)
+GOGC=50 ./decoder
+
+# Monitor memory
+top -p $(pgrep decoder)  # Linux
+Activity Monitor  # macOS
+Task Manager  # Windows
+```
+
+## Security Considerations
+
+### Localhost Only (Default)
+
+By default, server binds to `127.0.0.1` (localhost only):
+- **Safe**: Only accessible from same machine
+- **No external exposure**: Not accessible from internet or LAN
+
+### LAN Mode (Mobile Support)
+
+When using `0.0.0.0:6969` for mobile:
+- **LAN only**: Accessible from local network
+- **Firewall required**: Don't expose port 6969 to internet
+- **No authentication**: Anyone on LAN can use the server
+- **HTTPS**: Not implemented (use VPN for remote access)
+
+### Recommendations
+
+1. **Never expose to internet**: Use VPN (Tailscale, WireGuard) for remote access
+2. **Firewall**: Block port 6969 on WAN interface
+3. **Updates**: Keep server binary updated with desktop app
+4. **Monitoring**: Check logs for suspicious activity
+
+## Next Steps
+
+- [Desktop App](/platforms/desktop) - Learn how the server integrates with desktop
+- [Mobile App](/platforms/mobile) - Configure mobile to use standalone server
+- Explore [anacrolix/torrent](https://github.com/anacrolix/torrent) for advanced torrent features

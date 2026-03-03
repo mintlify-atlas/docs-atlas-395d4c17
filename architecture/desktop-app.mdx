@@ -1,0 +1,383 @@
+---
+title: Desktop App Architecture
+description: Technical architecture of Raffi's Electron-based desktop application
+---
+
+The Raffi desktop app is built with Electron, Svelte 5, and TypeScript, providing a cross-platform video streaming experience for Windows, macOS, and Linux.
+
+## Tech Stack
+
+### Core Technologies
+
+- **Electron 40**: Desktop runtime for cross-platform distribution
+- **Svelte 5**: Reactive UI framework with runes-based state management
+- **TypeScript**: Type-safe development
+- **Vite 7**: Build tool and development server
+- **Tailwind CSS 4**: Utility-first styling
+
+### Key Dependencies
+
+From `raffi-desktop/package.json:133-147`:
+
+```json
+{
+  "convex": "^1.31.7",           // Real-time backend
+  "@supabase/supabase-js": "^2.95.3",  // Database & auth
+  "hls.js": "^1.6.15",            // HLS video playback
+  "express": "^5.2.1",            // Local HTTP server
+  "chromecast-api": "^0.4.2",     // Chromecast support
+  "@ryuziii/discord-rpc": "^1.0.1-rc.1",  // Discord presence
+  "electron-updater": "^6.7.3",   // Auto-updates
+  "lucide-svelte": "^0.563.0"     // Icon library
+}
+```
+
+## Architecture Overview
+
+### Process Model
+
+Raffi uses Electron's multi-process architecture:
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Main Process                      │
+│  (electron/main.cjs)                               │
+│                                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────┐ │
+│  │   Decoder    │  │    HTTP      │  │ Discord  │ │
+│  │   Server     │  │   Server     │  │   RPC    │ │
+│  │   (Go)       │  │  (Express)   │  │          │ │
+│  └──────────────┘  └──────────────┘  └──────────┘ │
+│                                                     │
+│  ┌──────────────────────────────────────────────┐ │
+│  │         Service Layer                        │ │
+│  │  - Decoder Service                           │ │
+│  │  - Cast Sender/Bootstrap                     │ │
+│  │  - Window Management                         │ │
+│  │  - IPC Handlers                              │ │
+│  │  - Protocol Handlers                         │ │
+│  └──────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+                       ↕ IPC
+┌─────────────────────────────────────────────────────┐
+│                Renderer Process                     │
+│  (Vite + Svelte 5)                                 │
+│                                                     │
+│  ┌──────────────────────────────────────────────┐ │
+│  │         UI Layer (src/)                      │ │
+│  │  - App.svelte (root component)               │ │
+│  │  - Pages (player, library, settings)         │ │
+│  │  - Components (video player, UI elements)    │ │
+│  └──────────────────────────────────────────────┘ │
+│                                                     │
+│  ┌──────────────────────────────────────────────┐ │
+│  │         Data Layer (src/lib/)                │ │
+│  │  - Convex client                             │ │
+│  │  - Supabase client                           │ │
+│  │  - API integrations                          │ │
+│  │  - State stores                              │ │
+│  └──────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+```
+
+## Main Process
+
+### Entry Point
+
+Location: `electron/main.cjs`
+
+The main process orchestrates all desktop-specific functionality:
+
+1. **Application Lifecycle** (main.cjs:75-90)
+   - Single instance lock enforcement
+   - File association handling
+   - Deep link protocol (`raffi://`) support
+   - Cleanup on shutdown
+
+2. **Decoder Server Management** (main.cjs:288-299)
+   - Starts bundled Go streaming server on port 6969
+   - Platform-specific binary selection (Windows/macOS/Linux)
+   - Health checks and error handling
+   - Automatic cleanup on exit
+
+3. **Window Management** (main.cjs:199-235)
+   - Adaptive zoom based on screen size
+   - Default size: 1778x1000
+   - Zoom range: 0.65-1.0 for screens < 1600px
+   - Auto-restore window state
+
+### Service Layer
+
+Location: `electron/services/`
+
+The main process is organized into specialized services:
+
+#### Decoder Service (`decoder.cjs`)
+- Manages the Go streaming server lifecycle
+- Selects correct binary for platform/architecture
+- Handles server startup and health monitoring
+- Resource paths:
+  - Linux: `decoder-x86_64-unknown-linux-gnu`
+  - macOS: `decoder-aarch64-apple-darwin`, `decoder-x86_64-apple-darwin`
+  - Windows: `decoder-windows-amd64.exe`
+
+#### Cast Services (`castBootstrap.cjs`, `castSender.cjs`)
+- Chromecast device discovery and connection
+- Cast session management
+- Media streaming to cast devices
+- Bootstrap service configures server address for casting
+
+#### Window Service (`window.cjs`)
+- BrowserWindow creation and configuration
+- Development vs. production URL loading
+- Local Express server for serving built files
+- Window state persistence
+- Zoom level management
+
+#### IPC Service (`mainIpc.cjs`)
+- Inter-process communication handlers
+- File dialog operations
+- Library scanning
+- External URL handling
+- Auto-update integration
+
+#### Protocol Handler (`protocol.cjs`)
+- `raffi://` deep link handling
+- OAuth callback processing (Ave ID, Trakt)
+- URL validation and security
+
+#### Discord RPC (`rpc.cjs`)
+- Discord Rich Presence integration
+- "Now Playing" status updates
+- Connection error handling
+
+#### FFmpeg Service (`ffmpeg.cjs`)
+- FFmpeg availability checking
+- Required for local file transcoding
+- User prompts for installation if missing
+
+## Renderer Process
+
+### Build Configuration
+
+Location: `vite.config.ts`
+
+```typescript
+export default defineConfig({
+  base: './',
+  plugins: [svelte(), tailwindcss()],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+    },
+  },
+})
+```
+
+### UI Structure
+
+Location: `src/`
+
+```
+src/
+├── App.svelte              # Root component
+├── main.ts                 # Renderer entry point
+├── pages/                  # Page components
+│   ├── player/            # Video player page
+│   ├── library/           # Library management
+│   ├── settings/          # App settings
+│   └── addons/            # Addon management
+├── components/            # Reusable UI components
+│   ├── video/            # Video player components
+│   ├── ui/               # Generic UI elements
+│   └── layout/           # Layout components
+└── lib/                   # Business logic
+    ├── api/              # External API clients
+    ├── db/               # Database clients
+    ├── stores/           # State management
+    └── utils/            # Helper functions
+```
+
+### State Management
+
+Raffi uses Svelte 5's runes for reactive state:
+
+- **Component state**: `$state()` runes
+- **Derived values**: `$derived()` runes
+- **Effects**: `$effect()` for side effects
+- **Custom stores**: Svelte stores for global state
+
+### Data Layer
+
+Location: `src/lib/`
+
+#### Convex Integration (`lib/convex.ts`)
+- Real-time backend for watch parties
+- Synchronized playback state
+- User presence tracking
+- Custom lists and library sync
+
+#### Supabase Integration (`lib/db/`)
+- PostgreSQL database for user data
+- Authentication (OAuth providers)
+- Watch progress tracking
+- Cross-device synchronization
+
+#### API Clients (`lib/api.ts`)
+- TMDB for metadata
+- Stremio addon protocol
+- Torrent indexers
+- Trakt integration
+
+## Video Playback
+
+### HLS Streaming
+
+- **Player**: HLS.js for adaptive bitrate streaming
+- **Source**: Decoder server converts any video to HLS
+- **Features**:
+  - Multiple quality levels
+  - Audio track selection
+  - Subtitle support (SRT/VTT)
+  - Seek with keyframe accuracy
+  - Picture-in-picture mode
+
+### Streaming Flow
+
+```
+Video Source → Decoder Server (Go) → HLS Stream → HLS.js → <video> Element
+    ↓              (port 6969)           ↓
+[Torrent/URL]    [FFmpeg transcode]   [.m3u8 + .ts]
+```
+
+## Build & Distribution
+
+### electron-builder Configuration
+
+Location: `package.json:36-132`
+
+```json
+{
+  "build": {
+    "appId": "al.kaleid.raffi",
+    "productName": "Raffi",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ]
+  }
+}
+```
+
+### Platform-Specific Builds
+
+**Linux**:
+- Formats: `.deb`, `.rpm`, `.AppImage`
+- Category: Video
+- Icon: PNG set in `build/icons/`
+
+**macOS**:
+- Formats: `.dmg`, `.zip`
+- Universal binary support (x64 + ARM64)
+- Notarization ready
+- Icon: `.icns` format
+
+**Windows**:
+- Formats: NSIS installer, MSI
+- Code signing ready
+- Icon: `.ico` format
+
+### File Associations
+
+Supported video formats:
+- `.mp4`, `.mkv`, `.avi`, `.webm`, `.mov`
+
+### Auto-Updates
+
+- **electron-updater** checks GitHub releases
+- Background downloads
+- Install on restart
+- User notification system
+
+## Development Workflow
+
+### Commands
+
+```bash
+# Development mode (hot reload)
+npm run electron:dev
+
+# Build server binary only
+npm run server:build
+
+# Build production app
+npm run dist
+
+# Build for specific platform
+npm run dist -- --linux
+npm run dist -- --mac
+npm run dist -- --win
+```
+
+### Development Flow
+
+1. `server:build` compiles Go decoder binary
+2. `vite` starts dev server on port 5173
+3. `electron .` launches app pointing to dev server
+4. HMR enabled for Svelte components
+5. Electron reloads on main process changes
+
+## Security
+
+### Context Isolation
+- Renderer has no direct Node.js access
+- IPC communication via preload script
+- Sandboxed renderer process (disabled in dev via `ELECTRON_DISABLE_SANDBOX`)
+
+### Protocol Handling
+- URL validation for external links
+- Whitelist for allowed domains
+- Safe shell opening for external URLs
+
+### Network Security
+- CORS configured on local server
+- Token-based cast authentication
+- Secure OAuth flow handling
+
+## Key Design Decisions
+
+### Why Electron + Svelte?
+- **Cross-platform**: Single codebase for Windows/macOS/Linux
+- **Performance**: Svelte's compile-time reactivity reduces runtime overhead
+- **Developer experience**: Svelte 5 runes provide excellent TypeScript support
+- **Ecosystem**: Access to Node.js modules and native addons
+
+### Why Bundled Go Server?
+- **Performance**: Go excels at concurrent video streaming
+- **Reliability**: Compiled binary has no runtime dependencies
+- **Security**: Sandboxed process with controlled lifecycle
+- **Simplicity**: No external server setup required
+
+### Why HLS Over Direct Playback?
+- **Compatibility**: Works with any video format via transcoding
+- **Adaptive streaming**: Quality adjusts to network conditions
+- **Seeking**: Fast seeks without full file download
+- **Subtitles**: External subtitle injection during transcoding
+
+## Related Documentation
+
+- [Streaming Server Architecture](/architecture/streaming-server)
+- [Backend Architecture](/architecture/backend)
+- [Mobile App Architecture](/architecture/mobile-app)

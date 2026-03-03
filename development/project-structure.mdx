@@ -1,0 +1,318 @@
+---
+title: Project Structure
+description: Explore the Raffi codebase organization and key directories
+---
+
+Raffi is organized as a monorepo containing five main projects. This guide provides a detailed overview of each project's structure.
+
+## Repository Root
+
+```
+raffi/
+├── raffi-desktop/     # Desktop app (Electron + Svelte 5)
+├── raffi-mobile/      # Mobile app (React Native + Expo)
+├── raffi-server/      # Streaming server (Go)
+├── raffi-site/        # Marketing website (SvelteKit)
+├── convex/            # Backend functions (Convex)
+├── .github/           # GitHub workflows and configuration
+├── .vscode/           # VS Code workspace settings
+├── package.json       # Root package.json for workspace
+├── bun.lock           # Bun lockfile
+└── README.md          # Project documentation
+```
+
+## Desktop App (`raffi-desktop/`)
+
+The desktop application built with Electron 40, Svelte 5, and TypeScript.
+
+### Directory Structure
+
+```
+raffi-desktop/
+├── build/              # Build assets
+│   └── icons/          # App icons for different platforms
+├── electron/           # Electron main process code
+│   ├── services/       # Backend services (Discord, etc.)
+│   ├── main.cjs        # Main Electron entry point
+│   └── decoder-*       # Compiled server binaries for each platform
+├── public/             # Static assets
+├── src/                # Svelte application source
+│   ├── components/     # Svelte components
+│   ├── lib/            # Shared libraries and utilities
+│   ├── pages/          # Page components
+│   └── main.ts         # App entry point
+├── package.json        # Dependencies and build configuration
+├── tsconfig.json       # TypeScript configuration
+├── vite.config.ts      # Vite configuration
+└── tailwind.config.js  # Tailwind CSS configuration
+```
+
+### Key Files
+
+- **`electron/main.cjs`** - Electron main process, handles window creation, IPC, and system integration
+- **`electron/services/`** - Backend services like Discord Rich Presence
+- **`src/main.ts`** - Svelte app entry point
+- **`src/components/`** - Reusable UI components (video player, modals, cards, etc.)
+- **`src/lib/`** - Utilities, API clients, stores, and shared logic
+- **`src/pages/`** - Top-level page components
+- **`build_binary.cjs`** - Script to build Go server binaries for all platforms
+
+### Dependencies
+
+**Key Production Dependencies:**
+- `electron` - Desktop framework
+- `svelte` - Frontend framework
+- `@supabase/supabase-js` - Database and authentication
+- `convex` - Real-time backend
+- `hls.js` - Video playback
+- `@ryuziii/discord-rpc` - Discord integration
+- `electron-updater` - Auto-update functionality
+- `tailwindcss` - CSS framework
+- `lucide-svelte` - Icon library
+
+**Build Tools:**
+- `vite` - Build tool and dev server
+- `electron-builder` - Package and distribute
+- `@sveltejs/vite-plugin-svelte` - Svelte support for Vite
+
+## Mobile App (`raffi-mobile/`)
+
+The mobile application built with React Native and Expo SDK 54.
+
+### Directory Structure
+
+```
+raffi-mobile/
+├── app/                # Expo Router pages
+│   ├── (tabs)/         # Tab navigation screens
+│   ├── meta/           # Metadata screens (show/movie details)
+│   ├── _layout.tsx     # Root layout
+│   └── player.tsx      # Video player screen
+├── assets/             # Static assets
+│   └── images/         # Images and icons
+├── components/         # React components
+│   ├── common/         # Shared components
+│   ├── home/           # Home screen components
+│   └── ui/             # UI components
+├── constants/          # App constants and configuration
+├── hooks/              # Custom React hooks
+├── lib/                # Shared libraries
+│   ├── auth/           # Authentication logic
+│   ├── stores/         # Zustand stores
+│   ├── streams/        # Streaming utilities
+│   └── torrent/        # Torrent client
+├── modules/            # Native modules
+│   └── torrent-streamer/ # Custom torrent streaming module
+├── app.json            # Expo configuration
+├── package.json        # Dependencies
+├── tsconfig.json       # TypeScript configuration
+└── eas.json            # EAS Build configuration
+```
+
+### Key Files
+
+- **`app/_layout.tsx`** - Root layout with navigation setup
+- **`app/(tabs)/`** - Tab navigation screens (Home, Search, Library, Profile)
+- **`app/meta/`** - Content detail screens
+- **`app/player.tsx`** - Video player with native controls
+- **`components/`** - Reusable UI components
+- **`lib/auth/`** - Supabase authentication
+- **`lib/stores/`** - Global state management with Zustand
+- **`modules/torrent-streamer/`** - Native module for torrent streaming
+
+### Dependencies
+
+**Key Production Dependencies:**
+- `expo` - React Native framework
+- `react` - UI library (v19)
+- `react-native` - Native platform (v0.81)
+- `expo-router` - File-based routing
+- `expo-video` - Native video player
+- `@supabase/supabase-js` - Shared with desktop
+- `convex` - Real-time backend
+- `zustand` - State management
+- `@expo/vector-icons` - Icons
+
+**Expo SDK Modules:**
+- `expo-av`, `expo-blur`, `expo-brightness`, `expo-file-system`, `expo-haptics`, etc.
+
+## Streaming Server (`raffi-server/`)
+
+The HLS transcoding server built with Go.
+
+### Directory Structure
+
+```
+raffi-server/
+├── src/                # Additional source files
+│   ├── hls/            # HLS transcoding logic
+│   └── torrent/        # Torrent handling
+├── main.go             # Main server entry point
+├── cast.go             # Chromecast functionality
+├── clip.go             # Video clipping
+├── community_addons.go # Stremio addon integration
+├── go.mod              # Go module definition
+└── go.sum              # Go dependencies
+```
+
+### Key Files
+
+- **`main.go`** - HTTP server, routing, and core logic
+- **`cast.go`** - Chromecast device discovery and streaming
+- **`clip.go`** - Video segment extraction and clipping
+- **`community_addons.go`** - Integration with Stremio addon protocol
+- **`src/hls/`** - HLS transcoding and streaming
+- **`src/torrent/`** - Torrent client and magnet link handling
+
+### Key Dependencies
+
+- `github.com/anacrolix/torrent` - Torrent client library
+- Various encoding and streaming libraries
+- WebRTC libraries for Chromecast support
+
+## Marketing Website (`raffi-site/`)
+
+The marketing website built with SvelteKit.
+
+### Directory Structure
+
+```
+raffi-site/
+├── public/             # Static assets
+│   ├── images/         # Images
+│   └── downloads/      # Downloadable files
+├── src/                # SvelteKit source
+│   ├── routes/         # SvelteKit routes
+│   └── lib/            # Shared utilities
+├── package.json        # Dependencies
+├── svelte.config.js    # Svelte configuration
+├── vite.config.ts      # Vite configuration
+└── tsconfig.json       # TypeScript configuration
+```
+
+### Key Files
+
+- **`src/routes/`** - SvelteKit file-based routing
+- **`src/lib/`** - Shared components and utilities
+- **`public/`** - Static files served directly
+
+## Backend Functions (`convex/`)
+
+Real-time backend functions powered by Convex.
+
+### Directory Structure
+
+```
+convex/
+├── _generated/         # Auto-generated Convex files
+├── raffi.ts            # Main backend functions
+├── auth.config.ts      # Authentication configuration
+├── schema.ts           # Database schema definition
+├── tsconfig.json       # TypeScript configuration
+└── README.md           # Convex documentation
+```
+
+### Key Files
+
+- **`raffi.ts`** - Watch party logic, presence, mutations, and queries
+- **`auth.config.ts`** - Supabase authentication integration
+- **`schema.ts`** - Database tables and relationships:
+  - Watch parties
+  - User presence
+  - Watch progress
+  - Custom lists
+  - Addon configurations
+
+### Convex Functions
+
+The `raffi.ts` file contains functions for:
+- Creating and managing watch parties
+- Syncing playback state across devices
+- Tracking user presence
+- Managing watch progress
+- Handling custom lists and favorites
+
+## Build Outputs
+
+### Desktop App
+
+```
+raffi-desktop/
+├── dist/               # Vite build output (renderer process)
+├── release/            # electron-builder output
+│   ├── Raffi-x.x.x.exe          # Windows installer
+│   ├── Raffi-x.x.x.dmg          # macOS disk image
+│   ├── Raffi-x.x.x.AppImage     # Linux AppImage
+│   └── ...             # Other platform builds
+└── electron/decoder-*  # Compiled Go binaries
+```
+
+### Mobile App
+
+- Development builds are installed directly on devices/simulators
+- Production builds are managed through Expo Application Services (EAS)
+- Output includes `.apk`/`.aab` (Android) and `.ipa` (iOS)
+
+## Configuration Files
+
+### TypeScript Configuration
+
+Each project has its own `tsconfig.json` with project-specific settings:
+- **Desktop**: Svelte types, Electron types
+- **Mobile**: React Native types, Expo types
+- **Convex**: Convex types
+
+### Build Configuration
+
+- **Desktop**: `electron-builder` config in `package.json` under `build` key
+- **Mobile**: `app.json` and `eas.json` for Expo configuration
+- **Server**: Go modules in `go.mod`
+
+## Environment Variables
+
+Each project may require environment variables:
+
+- **Desktop/Mobile**:
+  - `SUPABASE_URL` - Supabase project URL
+  - `SUPABASE_ANON_KEY` - Supabase anonymous key
+  - `CONVEX_URL` - Convex deployment URL
+
+- **Convex**:
+  - Configured through Convex dashboard
+
+<Note>
+  Environment variables are typically stored in `.env` files (git-ignored) or configured through the respective platform dashboards.
+</Note>
+
+## Code Organization Best Practices
+
+### Desktop App
+
+- **Components**: Keep components small and focused
+- **Stores**: Use Svelte stores for shared state
+- **Services**: Isolate platform-specific logic in `electron/services/`
+- **Utilities**: Share common logic in `src/lib/`
+
+### Mobile App
+
+- **Screens**: Use Expo Router file-based routing in `app/`
+- **Components**: Organize by feature or type
+- **Hooks**: Extract reusable logic into custom hooks
+- **Stores**: Use Zustand for global state
+
+### Server
+
+- **Handlers**: Keep HTTP handlers focused and testable
+- **Separation**: Separate business logic from HTTP logic
+- **Modules**: Organize by feature (HLS, torrent, cast, etc.)
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Development Overview" icon="book" href="/development/overview">
+    Learn about Raffi's architecture and tech stack
+  </Card>
+  <Card title="Setup Guide" icon="wrench" href="/development/setup">
+    Set up your development environment
+  </Card>
+</CardGroup>

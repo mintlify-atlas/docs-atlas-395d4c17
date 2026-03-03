@@ -1,0 +1,342 @@
+---
+title: Development Setup
+description: Set up your local development environment for Raffi
+---
+
+This guide will help you set up Raffi for local development.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+### Required
+
+- **Node.js** 18+ or **Bun** 1.0+
+  - Download from [nodejs.org](https://nodejs.org/) or [bun.sh](https://bun.sh/)
+  - The desktop app uses Bun, but npm also works
+- **Go** 1.21+ (for the streaming server)
+  - Download from [go.dev](https://go.dev/dl/)
+  - Required to build the server binary
+- **Git**
+  - Download from [git-scm.com](https://git-scm.com/)
+
+### Optional
+
+- **Expo CLI** (for mobile development)
+  - Install globally: `npm install -g expo-cli`
+- **Xcode** (for iOS development on macOS)
+- **Android Studio** (for Android development)
+
+## Clone the Repository
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/kaleidal/raffi.git
+    cd raffi
+    ```
+  </Step>
+
+  <Step title="Verify directory structure">
+    You should see the following directories:
+    ```
+    raffi/
+    ├── raffi-desktop/     # Desktop app (Electron + Svelte 5)
+    ├── raffi-mobile/      # Mobile app (React Native + Expo)
+    ├── raffi-server/      # Streaming server (Go)
+    ├── raffi-site/        # Marketing website (SvelteKit)
+    └── convex/            # Backend functions (Convex)
+    ```
+  </Step>
+</Steps>
+
+## Desktop App Setup
+
+The desktop app is built with Electron and Svelte 5.
+
+<Steps>
+  <Step title="Navigate to desktop directory">
+    ```bash
+    cd raffi-desktop
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    <CodeGroup>
+      ```bash Bun (Recommended)
+      bun install
+      ```
+
+      ```bash npm
+      npm install
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Start development server">
+    This command builds the server binary and starts Electron in development mode:
+
+    <CodeGroup>
+      ```bash Bun
+      bun run electron:dev
+      ```
+
+      ```bash npm
+      npm run electron:dev
+      ```
+    </CodeGroup>
+
+    The app will open automatically once the Vite dev server is ready.
+  </Step>
+</Steps>
+
+### Desktop Development Commands
+
+<CodeGroup>
+  ```bash Bun
+  # Run in development mode (builds server + starts electron)
+  bun run electron:dev
+
+  # Run electron only (if server already built)
+  bun run electron:dev:only
+
+  # Build the streaming server binary
+  bun run server:build
+
+  # Build for production
+  bun run build
+
+  # Build and package for distribution
+  bun run dist
+
+  # Build for specific platform
+  bun run dist -- --win      # Windows
+  bun run dist -- --mac      # macOS
+  bun run dist -- --linux    # Linux
+  ```
+
+  ```bash npm
+  # Run in development mode (builds server + starts electron)
+  npm run electron:dev
+
+  # Run electron only (if server already built)
+  npm run electron:dev:only
+
+  # Build the streaming server binary
+  npm run server:build
+
+  # Build for production
+  npm run build
+
+  # Build and package for distribution
+  npm run dist
+
+  # Build for specific platform
+  npm run dist -- --win      # Windows
+  npm run dist -- --mac      # macOS
+  npm run dist -- --linux    # Linux
+  ```
+</CodeGroup>
+
+Built packages will be in `raffi-desktop/release/`.
+
+## Mobile App Setup
+
+The mobile app is built with React Native and Expo SDK 54.
+
+<Steps>
+  <Step title="Navigate to mobile directory">
+    ```bash
+    cd raffi-mobile
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+
+  <Step title="Configure streaming server">
+    The mobile app requires the desktop server running for torrent streams.
+
+    Update `STREAMING_SERVER` in `app/player.tsx` with your local IP address:
+    ```typescript
+    const STREAMING_SERVER = 'http://192.168.1.100:8080'; // Your local IP
+    ```
+  </Step>
+
+  <Step title="Start Expo development server">
+    ```bash
+    npm start
+    ```
+
+    This opens the Expo developer tools in your browser.
+  </Step>
+</Steps>
+
+### Mobile Development Commands
+
+```bash
+# Start Expo development server
+npm start
+
+# Run on iOS simulator (macOS only)
+npm run ios
+
+# Run on Android emulator
+npm run android
+
+# Run on web
+npm run web
+
+# Development builds
+npx expo run:ios       # iOS
+npx expo run:android   # Android
+
+# Production builds (requires EAS account)
+eas build --platform ios
+eas build --platform android
+```
+
+<Note>
+  Production builds use Expo Application Services (EAS). You'll need an Expo account to build for production.
+</Note>
+
+## Streaming Server Setup
+
+The streaming server is typically built automatically by the desktop app, but you can build and run it standalone.
+
+<Steps>
+  <Step title="Navigate to server directory">
+    ```bash
+    cd raffi-server
+    ```
+  </Step>
+
+  <Step title="Build the server binary">
+    ```bash
+    go build -o decoder .
+    ```
+
+    This creates a `decoder` binary in the current directory.
+  </Step>
+
+  <Step title="Run the server">
+    ```bash
+    ./decoder
+    ```
+
+    The server starts on port 8080 by default.
+  </Step>
+</Steps>
+
+<Info>
+  The desktop app's `electron:dev` command automatically builds the server binary, so you typically don't need to build it manually.
+</Info>
+
+## Marketing Website Setup
+
+The marketing website is built with SvelteKit.
+
+<Steps>
+  <Step title="Navigate to site directory">
+    ```bash
+    cd raffi-site
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+
+  <Step title="Start development server">
+    ```bash
+    npm run dev
+    ```
+
+    The site will be available at `http://localhost:5173`.
+  </Step>
+</Steps>
+
+### Website Development Commands
+
+```bash
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Convex Backend Setup
+
+Convex provides real-time backend functions for watch parties and synchronization.
+
+<Steps>
+  <Step title="Navigate to convex directory">
+    ```bash
+    cd convex
+    ```
+  </Step>
+
+  <Step title="Install Convex CLI">
+    <CodeGroup>
+      ```bash Bun
+      bun add -g convex
+      ```
+
+      ```bash npm
+      npm install -g convex
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Initialize Convex (if needed)">
+    ```bash
+    npx convex dev
+    ```
+
+    This starts the Convex development server and watches for changes.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Desktop App Won't Start
+
+- Ensure the server binary is built: `bun run server:build`
+- Check that ports 5173 and 8080 are available
+- Try running `bun run electron:dev:only` if the server is already built
+
+### Mobile App Can't Connect to Server
+
+- Verify your local IP address in `app/player.tsx`
+- Ensure the desktop server is running
+- Check that your phone and computer are on the same network
+- Disable any firewalls blocking port 8080
+
+### Go Build Fails
+
+- Ensure Go 1.21+ is installed: `go version`
+- Update Go modules: `go mod download`
+- Check that your Go environment is properly configured
+
+### Expo Build Errors
+
+- Clear Expo cache: `expo start -c`
+- Reinstall dependencies: `rm -rf node_modules && npm install`
+- Update Expo CLI: `npm install -g expo-cli@latest`
+
+## Next Steps
+
+Now that you have Raffi running locally, explore the project structure:
+
+<Card title="Project Structure" icon="folder-tree" href="/development/project-structure">
+  Learn about the codebase organization and key directories
+</Card>

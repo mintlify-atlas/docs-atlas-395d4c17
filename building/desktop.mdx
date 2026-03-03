@@ -1,0 +1,312 @@
+---
+title: Building Desktop App
+description: Build Raffi for Windows, macOS, and Linux using Electron Builder
+---
+
+The desktop application is built using Electron with Svelte 5, and packaged with electron-builder for cross-platform distribution.
+
+## Prerequisites
+
+Before building the desktop app, ensure you have:
+
+- Node.js 18+ or Bun 1.0+
+- Go 1.25+ (for building the streaming server binary)
+- Git
+- Platform-specific build tools:
+  - **Windows**: Visual Studio Build Tools or Windows SDK
+  - **macOS**: Xcode Command Line Tools
+  - **Linux**: Standard build tools (`build-essential` on Debian/Ubuntu)
+
+## Build Configuration
+
+The build configuration is defined in `raffi-desktop/package.json` under the `build` key:
+
+```json
+{
+  "build": {
+    "appId": "al.kaleid.raffi",
+    "productName": "Raffi",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": true
+  }
+}
+```
+
+## Development Build
+
+To run the desktop app in development mode:
+
+<Steps>
+  <Step title="Navigate to desktop directory">
+    ```bash
+    cd raffi-desktop
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    <CodeGroup>
+    ```bash npm
+    npm install
+    ```
+
+    ```bash bun
+    bun install
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Run development server">
+    This command builds the server binary and starts Electron:
+
+    <CodeGroup>
+    ```bash npm
+    npm run electron:dev
+    ```
+
+    ```bash bun
+    bun run electron:dev
+    ```
+    </CodeGroup>
+
+    The `electron:dev` script runs:
+    - Server build (`npm run server:build`)
+    - Vite dev server on `http://localhost:5173`
+    - Electron with `NODE_ENV=development`
+  </Step>
+
+  <Step title="Run Electron only (optional)">
+    If the server binary is already built:
+
+    <CodeGroup>
+    ```bash npm
+    npm run electron:dev:only
+    ```
+
+    ```bash bun
+    bun run electron:dev:only
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+## Production Build
+
+### Build Process
+
+The production build process involves three stages:
+
+<Steps>
+  <Step title="Build the streaming server">
+    The `server:build` script runs `build_binary.cjs`, which compiles the Go server for your platform:
+
+    <CodeGroup>
+    ```bash Windows
+    # Outputs: electron/decoder-windows-amd64.exe
+    go build -ldflags="-s -w -extldflags '-static'" \
+      -tags=sqlite_omit_load_extension \
+      -o ../raffi-desktop/electron/decoder-windows-amd64.exe
+    ```
+
+    ```bash Linux
+    # Outputs: electron/decoder-x86_64-unknown-linux-gnu
+    go build -ldflags="-s -w -extldflags '-static'" \
+      -tags=sqlite_omit_load_extension \
+      -o ../raffi-desktop/electron/decoder-x86_64-unknown-linux-gnu
+    ```
+
+    ```bash macOS (ARM64)
+    # Outputs: electron/decoder-aarch64-apple-darwin
+    go build -ldflags="-s -w" \
+      -tags=sqlite_omit_load_extension \
+      -o ../raffi-desktop/electron/decoder-aarch64-apple-darwin
+    ```
+
+    ```bash macOS (x64)
+    # Outputs: electron/decoder-x86_64-apple-darwin
+    go build -ldflags="-s -w" \
+      -tags=sqlite_omit_load_extension \
+      -o ../raffi-desktop/electron/decoder-x86_64-apple-darwin
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Build the frontend">
+    The `build` script compiles the Svelte app using Vite:
+
+    <CodeGroup>
+    ```bash npm
+    npm run build
+    ```
+
+    ```bash bun
+    bun run build
+    ```
+    </CodeGroup>
+
+    This outputs the compiled frontend to the `dist/` directory.
+  </Step>
+
+  <Step title="Package with electron-builder">
+    Run the complete build and packaging process:
+
+    <CodeGroup>
+    ```bash npm
+    npm run dist
+    ```
+
+    ```bash bun
+    bun run dist
+    ```
+    </CodeGroup>
+
+    This runs all three steps: `server:build`, `build`, and `electron-builder`.
+  </Step>
+</Steps>
+
+## Platform-Specific Builds
+
+### Windows
+
+**Build Targets:**
+- NSIS installer (`.exe`)
+- MSI installer (`.msi`)
+
+**Configuration:**
+```json
+"win": {
+  "target": ["nsis", "msi"],
+  "icon": "build/icons/icon.ico",
+  "extraResources": [
+    {
+      "from": "electron/decoder-windows-amd64.exe",
+      "to": "decoder-windows-amd64.exe"
+    }
+  ]
+}
+```
+
+**Output Location:** `raffi-desktop/release/`
+
+**Artifacts:**
+- `Raffi-Setup-{version}.exe` - NSIS installer
+- `Raffi-{version}.msi` - MSI installer
+
+### macOS
+
+**Build Targets:**
+- DMG disk image
+- ZIP archive
+
+**Configuration:**
+```json
+"mac": {
+  "target": ["dmg", "zip"],
+  "icon": "build/icons/icon.icns",
+  "category": "public.app-category.video",
+  "extraResources": [
+    {
+      "from": "electron/decoder-aarch64-apple-darwin",
+      "to": "decoder-aarch64-apple-darwin"
+    },
+    {
+      "from": "electron/decoder-x86_64-apple-darwin",
+      "to": "decoder-x86_64-apple-darwin"
+    }
+  ]
+}
+```
+
+**Output Location:** `raffi-desktop/release/`
+
+**Artifacts:**
+- `Raffi-{version}.dmg` - Disk image
+- `Raffi-{version}-mac.zip` - ZIP archive
+- Universal binary support (both ARM64 and x64 server binaries included)
+
+### Linux
+
+**Build Targets:**
+- Debian package (`.deb`)
+- AppImage (`.AppImage`)
+- RPM package (`.rpm`)
+
+**Configuration:**
+```json
+"linux": {
+  "target": ["deb", "AppImage", "rpm"],
+  "icon": "build/icons",
+  "category": "Video",
+  "extraResources": [
+    {
+      "from": "electron/decoder-x86_64-unknown-linux-gnu",
+      "to": "decoder-x86_64-unknown-linux-gnu"
+    }
+  ]
+}
+```
+
+**Output Location:** `raffi-desktop/release/`
+
+**Artifacts:**
+- `Raffi-{version}.deb` - Debian package
+- `Raffi-{version}.AppImage` - Universal Linux package
+- `Raffi-{version}.rpm` - Red Hat package
+
+## Build Output Structure
+
+After running `npm run dist`, the `release/` directory contains:
+
+```
+release/
+├── Raffi-{version}.{platform-extension}  # Main installer/package
+├── Raffi-{version}.{platform-extension}.blockmap  # Update deltas
+├── latest.yml / latest-mac.yml / latest-linux.yml  # Auto-update metadata
+└── builder-debug.yml  # Build configuration used
+```
+
+## File Associations
+
+The desktop app registers handlers for common video formats:
+
+- `.mp4` - MP4 Video
+- `.mkv` - Matroska Video
+- `.avi` - AVI Video
+- `.webm` - WebM Video
+- `.mov` - QuickTime Video
+
+These associations are configured in the `fileAssociations` section of the build config.
+
+## ASAR Packaging
+
+The app uses ASAR archives (`asar: true`) to package the application code, with specific files unpacked:
+
+```json
+"asarUnpack": [
+  "node_modules/**/*.node",
+  "node_modules/**/prebuilds/**"
+]
+```
+
+This ensures native modules work correctly while keeping the package size optimized.
+
+## Publishing
+
+The app is configured to publish releases to GitHub:
+
+```json
+"publish": {
+  "provider": "github",
+  "owner": "kaleidal",
+  "repo": "raffi"
+}
+```
+
+Built-in auto-updater checks for new releases and downloads delta updates when available.
