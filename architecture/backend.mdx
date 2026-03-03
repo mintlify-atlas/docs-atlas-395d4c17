@@ -9,7 +9,7 @@ Raffi's backend is built on a modern serverless stack, combining Convex for real
 
 ### Backend Services
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                    Raffi Backend                        │
 │                                                         │
@@ -47,7 +47,7 @@ Convex provides the real-time layer for collaborative features and synchronized 
 
 **Location**: `convex/` directory in root
 
-```
+```text
 convex/
 ├── schema.ts              # Database schema
 ├── raffi.ts              # Main backend logic (53KB)
@@ -437,7 +437,7 @@ const supabase = createClient(
 
 ### Authentication Flow
 
-```
+```text
 User → Click "Sign In"
   ↓
 Supabase OAuth (Google, GitHub, etc.)
@@ -480,7 +480,7 @@ Ave ID provides additional authentication options:
 
 ### Watch Progress Sync
 
-```
+```text
 User watches video on Desktop
          ↓
   Update local state
@@ -496,7 +496,7 @@ Mobile app receives update
 
 ### Watch Party Flow
 
-```
+```text
 Host creates party (Convex mutation)
          ↓
   Generates party_id
@@ -518,7 +518,7 @@ Sync player position
 
 ### Addon Sync
 
-```
+```text
 User adds addon on Desktop
          ↓
   Insert into addons table

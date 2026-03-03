@@ -181,15 +181,17 @@ The production build process involves three stages:
 
 **Configuration:**
 ```json
-"win": {
-  "target": ["nsis", "msi"],
-  "icon": "build/icons/icon.ico",
-  "extraResources": [
-    {
-      "from": "electron/decoder-windows-amd64.exe",
-      "to": "decoder-windows-amd64.exe"
-    }
-  ]
+{
+  "win": {
+    "target": ["nsis", "msi"],
+    "icon": "build/icons/icon.ico",
+    "extraResources": [
+      {
+        "from": "electron/decoder-windows-amd64.exe",
+        "to": "decoder-windows-amd64.exe"
+      }
+    ]
+  }
 }
 ```
 
@@ -207,20 +209,22 @@ The production build process involves three stages:
 
 **Configuration:**
 ```json
-"mac": {
-  "target": ["dmg", "zip"],
-  "icon": "build/icons/icon.icns",
-  "category": "public.app-category.video",
-  "extraResources": [
-    {
-      "from": "electron/decoder-aarch64-apple-darwin",
-      "to": "decoder-aarch64-apple-darwin"
-    },
-    {
-      "from": "electron/decoder-x86_64-apple-darwin",
-      "to": "decoder-x86_64-apple-darwin"
-    }
-  ]
+{
+  "mac": {
+    "target": ["dmg", "zip"],
+    "icon": "build/icons/icon.icns",
+    "category": "public.app-category.video",
+    "extraResources": [
+      {
+        "from": "electron/decoder-aarch64-apple-darwin",
+        "to": "decoder-aarch64-apple-darwin"
+      },
+      {
+        "from": "electron/decoder-x86_64-apple-darwin",
+        "to": "decoder-x86_64-apple-darwin"
+      }
+    ]
+  }
 }
 ```
 
@@ -240,16 +244,18 @@ The production build process involves three stages:
 
 **Configuration:**
 ```json
-"linux": {
-  "target": ["deb", "AppImage", "rpm"],
-  "icon": "build/icons",
-  "category": "Video",
-  "extraResources": [
-    {
-      "from": "electron/decoder-x86_64-unknown-linux-gnu",
-      "to": "decoder-x86_64-unknown-linux-gnu"
-    }
-  ]
+{
+  "linux": {
+    "target": ["deb", "AppImage", "rpm"],
+    "icon": "build/icons",
+    "category": "Video",
+    "extraResources": [
+      {
+        "from": "electron/decoder-x86_64-unknown-linux-gnu",
+        "to": "decoder-x86_64-unknown-linux-gnu"
+      }
+    ]
+  }
 }
 ```
 
@@ -264,7 +270,7 @@ The production build process involves three stages:
 
 After running `npm run dist`, the `release/` directory contains:
 
-```
+```text
 release/
 ├── Raffi-{version}.{platform-extension}  # Main installer/package
 ├── Raffi-{version}.{platform-extension}.blockmap  # Update deltas
@@ -289,10 +295,12 @@ These associations are configured in the `fileAssociations` section of the build
 The app uses ASAR archives (`asar: true`) to package the application code, with specific files unpacked:
 
 ```json
-"asarUnpack": [
-  "node_modules/**/*.node",
-  "node_modules/**/prebuilds/**"
-]
+{
+  "asarUnpack": [
+    "node_modules/**/*.node",
+    "node_modules/**/prebuilds/**"
+  ]
+}
 ```
 
 This ensures native modules work correctly while keeping the package size optimized.
@@ -302,10 +310,12 @@ This ensures native modules work correctly while keeping the package size optimi
 The app is configured to publish releases to GitHub:
 
 ```json
-"publish": {
-  "provider": "github",
-  "owner": "kaleidal",
-  "repo": "raffi"
+{
+  "publish": {
+    "provider": "github",
+    "owner": "kaleidal",
+    "repo": "raffi"
+  }
 }
 ```
 

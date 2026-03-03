@@ -31,7 +31,7 @@ require (
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                   Streaming Server                      │
 │                  (raffi-server/)                        │
@@ -155,7 +155,7 @@ go func() {
 
 Location: `main.go:143-194`
 
-```
+```text
 POST /sessions
 Content-Type: application/json
 
@@ -180,7 +180,7 @@ Response:
 
 Location: `main.go:251-362`
 
-```
+```text
 GET /sessions/:id
 
 Response:
@@ -219,7 +219,7 @@ Response:
 
 Location: `main.go:364-531`
 
-```
+```text
 GET /sessions/:id/stream?seek=120.5&seek_id=abc&force_slice=1
 
 Response: (HLS playlist)
@@ -265,7 +265,7 @@ type TorrentStreamer struct {
 
 #### Torrent Flow
 
-```
+```text
 Magnet Link → Torrent Client → Select File → Prioritize Pieces
                     ↓
               HTTP Server (internal)
@@ -370,7 +370,7 @@ ffprobe -v quiet \
 
 Location: `main.go:116-141`
 
-```
+```text
 POST /sessions/:id/audio
 Content-Type: application/json
 
@@ -389,7 +389,7 @@ Content-Type: application/json
 
 Location: `main.go:628-663`
 
-```
+```text
 POST /cleanup?id=session-uuid
 DELETE /cleanup?id=session-uuid
 ```
@@ -431,7 +431,7 @@ func withCORS(next http.Handler) http.Handler {
 - Desktop app requests token before casting
 
 **Token Flow**:
-```
+```text
 Desktop App → POST /cast/token → Server generates token
                 ↓
     Chromecast requests include ?cast_token=xyz

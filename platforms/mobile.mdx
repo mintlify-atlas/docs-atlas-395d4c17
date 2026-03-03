@@ -137,7 +137,7 @@ Raffi Mobile provides a Netflix-style mobile experience with browse, search, con
     Android supports **native on-device torrent streaming** using a custom native module:
     
     **Architecture**:
-    ```
+    ```text
     React Native → TorrentStreamer.ts → Native Module (Java)
                                               ↓
                                     TorrentStream-Android (libtorrent4j)
@@ -250,7 +250,7 @@ Raffi Mobile provides a Netflix-style mobile experience with browse, search, con
 
 ## Project Structure
 
-```
+```text
 raffi-mobile/
 ├── app/                      # Expo Router file-based routing
 │   ├── (tabs)/              # Tab navigator screens
@@ -544,7 +544,7 @@ interface AddonsStore {
 
 ### General
 - **Expo Go**: Torrent streaming NOT available in Expo Go (requires development build)
-- **Offline Mode**: Limited functionality without network (downloads coming soon)
+- **Offline Downloads**: Download content for offline playback (available in downloads tab)
 - **Transcoding**: Some codecs require desktop server for transcoding
 - **Network**: Torrent streaming requires Wi-Fi or unlimited data plan
 

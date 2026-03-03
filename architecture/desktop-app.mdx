@@ -38,7 +38,7 @@ From `raffi-desktop/package.json:133-147`:
 
 Raffi uses Electron's multi-process architecture:
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │                   Main Process                      │
 │  (electron/main.cjs)                               │
@@ -185,7 +185,7 @@ export default defineConfig({
 
 Location: `src/`
 
-```
+```text
 src/
 ├── App.svelte              # Root component
 ├── main.ts                 # Renderer entry point
@@ -251,7 +251,7 @@ Location: `src/lib/`
 
 ### Streaming Flow
 
-```
+```text
 Video Source → Decoder Server (Go) → HLS Stream → HLS.js → <video> Element
     ↓              (port 6969)           ↓
 [Torrent/URL]    [FFmpeg transcode]   [.m3u8 + .ts]
